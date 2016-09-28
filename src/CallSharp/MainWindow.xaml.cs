@@ -1,19 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace CallSharp
 {
@@ -43,16 +29,23 @@ namespace CallSharp
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
-      string input = TbIn.Text;
-      string output = TbOut.Text;
+      var input = TbIn.Text;
+      var output = TbOut.Text;
 
+      // if input and output are identical, be sure to add it
+      if (input == output)
+        Candidates.Add("input");
+
+      var interpretedInput = input.InferTypes().FirstOrDefault() ?? input;
+      var interpretedOutput = output.InferTypes().FirstOrDefault() ?? output;
 
       foreach (
-        var m in methodDatabase.FindOneToOneNonStatic(typeof(string), typeof(string)))
+        var m in methodDatabase.FindOneToOneNonStatic(
+          interpretedInput.GetType(), interpretedOutput.GetType()))
       {
-        string actualOutput = m.InvokeWithSingleArgument(input) as string;
+        string actualOutput = m.InvokeWithSingleArgument(interpretedInput) as string;
         if (output.Equals(actualOutput))
-          Candidates.Add("input." + m.Name + "(output)");
+          Candidates.Add("input." + m.Name + "()");
       }
     }
   }

@@ -58,9 +58,9 @@ namespace CallSharp
       return ps.Length == 1 && ps[0].IsParams();
     }
 
-    public static IReadOnlyList<Type> InferTypes(this string text)
+    public static IReadOnlyList<object> InferTypes(this string text)
     {
-      var result = new List<Type>();
+      var result = new List<object>();
 
       foreach (var type in parseableTypes)
       {
@@ -68,11 +68,11 @@ namespace CallSharp
           x => x.Name.Equals("TryParse") 
           && x.GetParameters().Length == 2))
         {
-          var _ = Activator.CreateInstance(type);
-          bool ok = (bool) m.Invoke(null, new[] {text, _});
+          var instance = Activator.CreateInstance(type);
+          bool ok = (bool) m.Invoke(null, new[] {text, instance});
           if (ok)
           {
-            result.Add(type);
+            result.Add(instance);
           }
         }
       }

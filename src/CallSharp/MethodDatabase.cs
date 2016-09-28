@@ -31,8 +31,6 @@ namespace CallSharp
         m.DeclaringType == inputType &&
         m.ReturnType == outputType))
       {
-        if (method.Name.Equals("ToString"))
-          Debugger.Break();
         var pars = method.GetParameters();
 
         if (!method.IsStatic &&
