@@ -39,6 +39,25 @@ namespace CallSharp
              != null;
     }
 
+    public static object InvokeWithSingleArgument<T>(this MethodInfo mi, T subject)
+    {
+      var pars = mi.GetParameters();
+      if (pars.IsSingleParamsArgument())
+        return mi.Invoke(subject, new[]
+        {
+          Activator.CreateInstance(pars[0].ParameterType.UnderlyingSystemType, 0)
+        });
+      else
+      {
+        return mi.Invoke(subject, new object[] {});
+      }
+    }
+
+    public static bool IsSingleParamsArgument(this ParameterInfo[] ps)
+    {
+      return ps.Length == 1 && ps[0].IsParams();
+    }
+
     public static IReadOnlyList<Type> InferTypes(this string text)
     {
       var result = new List<Type>();

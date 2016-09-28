@@ -22,7 +22,7 @@ namespace CallSharp
   /// </summary>
   public partial class MainWindow : Window
   {
-
+    private MethodDatabase methodDatabase = new MethodDatabase();
 
     public ObservableHashSet<string> Candidates
     {
@@ -35,8 +35,6 @@ namespace CallSharp
         DependencyProperty.Register("Candidates", typeof(ObservableHashSet<string>), typeof(MainWindow), 
           new PropertyMetadata(new ObservableHashSet<string>()));
 
-
-
     public MainWindow()
     {
       InitializeComponent();
@@ -48,40 +46,13 @@ namespace CallSharp
       string input = TbIn.Text;
       string output = TbOut.Text;
 
-      // get all types corresponding to the input
-      var types = input.InferTypes();
 
-      // search single string-to-string chains
-      foreach (var method in typeof(string).GetMethods())
+      foreach (
+        var m in methodDatabase.FindOneToOneNonStatic(typeof(string), typeof(string)))
       {
-        // ensure this takes a string and returns a string
-        var pars = method.GetParameters();
-
-        var isSingleParams = (pars.Length == 1 && pars[0].IsParams());
-        if (!method.IsStatic &&
-            method.ReturnType == typeof(string) &&
-            (pars.Length == 0 
-             || pars.AllAreOptional() 
-             || isSingleParams))
-        {
-          // try calling it and getting the result
-          string result;
-
-          if (isSingleParams)
-            result = (string) method.Invoke((object) input,
-              new[]
-              {
-                Activator.CreateInstance(
-                  pars[0].ParameterType.UnderlyingSystemType, 0)
-              });
-          else
-            result = (string) method.Invoke(input, new object[] {});
-          
-          if (result == output)
-          {
-            Candidates.Add("input." + method.Name + "(output)");
-          }
-        }
+        string actualOutput = m.InvokeWithSingleArgument(input) as string;
+        if (output.Equals(actualOutput))
+          Candidates.Add("input." + m.Name + "(output)");
       }
     }
   }
