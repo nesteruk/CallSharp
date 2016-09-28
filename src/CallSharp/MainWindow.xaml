@@ -1,0 +1,76 @@
+﻿<Window x:Class="CallSharp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CallSharp"
+        xmlns:clr="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d" x:Name="mainWindow"
+        Title="ActiveMesa CallSharp" Height="350" Width="525">
+  
+  <Window.Resources>
+    <FontFamily x:Key="theFont">Consolas,Courier New</FontFamily>
+    <clr:Double x:Key="smallFontSize">10</clr:Double>
+  </Window.Resources>
+  
+  <Grid DataContext="{Binding ElementName=mainWindow, Path=.}">
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"></RowDefinition>
+    </Grid.RowDefinitions>
+    <Label HorizontalAlignment="Right">Input:</Label>
+    <TextBox Grid.Column="1" FontFamily="{StaticResource theFont}" Margin="3"
+             x:Name="TbIn"/>
+    
+    <TextBlock Grid.Row="1" Grid.Column="1" 
+               FontSize="{StaticResource smallFontSize}"
+               Margin="2">
+      <Span>Input treated as: </Span>
+      <Hyperlink>string</Hyperlink>
+    </TextBlock>
+
+    <Label Grid.Row="2">Expected output:</Label>
+    <TextBox Grid.Column="1" Grid.Row="2" 
+             FontFamily="{StaticResource theFont}" Margin="3"
+             x:Name="TbOut"/>
+    
+    <TextBlock Grid.Row="3" Grid.Column="1" 
+               FontSize="{StaticResource smallFontSize}"
+               Margin="2">
+      <Span>Output treated as: </Span>
+      <Hyperlink>string</Hyperlink>
+    </TextBlock>
+
+    <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="0">
+      <Button Height="50" Margin="3" VerticalAlignment="Top"
+              x:Name="BtnSearch" Click="BtnSearch_OnClick">Search!</Button>
+      <Button Height="50" Margin="3" VerticalAlignment="Top">Copy Selected</Button>
+    </StackPanel>
+    <ListBox Grid.Row="4" Grid.Column="1" Margin="3" 
+             FontFamily="{StaticResource theFont}"
+             ItemsSource="{Binding Candidates}"/>
+    
+    <StatusBar Grid.Row="5" Grid.ColumnSpan="2">
+      <StatusBarItem>
+        <Label Name="LblInfo" FontSize="{StaticResource smallFontSize}">
+          Trying option
+        </Label>
+      </StatusBarItem>
+      <StatusBarItem>
+        <ProgressBar></ProgressBar>
+      </StatusBarItem>
+    </StatusBar>
+  </Grid>
+</Window>
+
+  
