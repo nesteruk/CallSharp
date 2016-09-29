@@ -42,5 +42,29 @@ namespace CallSharp
         }
       }
     }
+
+    public IEnumerable<MethodInfo> FindOneToOneStatic(Type inputType, Type outputType)
+    {
+      // search in ALL core types types :)
+      // warning: allowing other types is NOT SAFE because you might call File.Delete or something
+      foreach (var method in methods.Where(m =>
+        m.ReturnType == outputType 
+        && TypeDatabase.CoreTypes.Contains(m.DeclaringType)
+        && !m.Name.Equals("Parse") // it throws :(
+        ))
+      {
+        if (method.Name.Equals("IsNullOrWhitespace"))
+          Debugger.Break();
+
+        var pars = method.GetParameters();
+        
+        if (method.IsStatic &&
+            pars.Length == 1 &&
+            pars[0].ParameterType == inputType)
+        {
+          yield return method;
+        }
+      }
+    }
   }
 }

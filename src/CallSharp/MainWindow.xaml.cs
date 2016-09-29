@@ -38,14 +38,23 @@ namespace CallSharp
 
       var interpretedInput = input.InferTypes().FirstOrDefault() ?? input;
       var interpretedOutput = output.InferTypes().FirstOrDefault() ?? output;
-
+     
       foreach (
         var m in methodDatabase.FindOneToOneNonStatic(
           interpretedInput.GetType(), interpretedOutput.GetType()))
       {
-        string actualOutput = m.InvokeWithSingleArgument(interpretedInput) as string;
+        object actualOutput = m.InvokeWithNoArgument(interpretedInput);
         if (output.Equals(actualOutput))
           Candidates.Add("input." + m.Name + "()");
+      }
+
+      foreach (
+        var m in methodDatabase.FindOneToOneStatic(
+          interpretedInput.GetType(), interpretedOutput.GetType()))
+      {
+        var actualOutput = m.InvokeStaticWithSingleArgument(interpretedInput);
+        if (output.Equals(actualOutput))
+          Candidates.Add($"{m.DeclaringType?.Name}.{m.Name}(input)");
       }
     }
   }

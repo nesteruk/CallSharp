@@ -7,27 +7,6 @@ namespace CallSharp
 {
   public static class ExtensionMethods
   {
-    private static Type[] parseableTypes = new[]
-    {
-      typeof(DateTime),
-      typeof(TimeSpan),
-      typeof(double),
-      typeof(float),
-      typeof(decimal),
-      typeof(double),
-      typeof(float),
-      typeof(long),
-      typeof(ulong),
-      typeof(int),
-      typeof(uint),
-      typeof(short),
-      typeof(ushort),
-      typeof(byte),
-      typeof(sbyte),
-    };
-
-    private static IEnumerable<Type> AllTypes => parseableTypes;
-
     public static bool AllAreOptional(this ParameterInfo[] ps)
     {
       return ps.All(p => p.IsOptional);
@@ -39,7 +18,12 @@ namespace CallSharp
              != null;
     }
 
-    public static object InvokeWithSingleArgument<T>(this MethodInfo mi, T subject)
+    public static object InvokeStaticWithSingleArgument<T>(this MethodInfo mi, T arg)
+    {
+      return mi.Invoke(null /*static*/, new object[] {arg});
+    }
+
+    public static object InvokeWithNoArgument<T>(this MethodInfo mi, T subject)
     {
       var pars = mi.GetParameters();
       if (pars.IsSingleParamsArgument())
@@ -62,7 +46,7 @@ namespace CallSharp
     {
       var result = new List<object>();
 
-      foreach (var type in parseableTypes)
+      foreach (var type in TypeDatabase.ParseableTypes)
       {
         foreach (var m in type.GetMethods().Where(
           x => x.Name.Equals("TryParse") 
