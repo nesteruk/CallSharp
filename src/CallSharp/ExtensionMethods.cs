@@ -1,5 +1,8 @@
 ﻿using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -14,27 +17,42 @@ namespace CallSharp
 
     public static bool IsParams(this ParameterInfo pi)
     {
-      return pi.GetCustomAttribute<ParamArrayAttribute>()
-             != null;
+      return pi.GetCustomAttribute<ParamArrayAttribute>() != null;
     }
 
     public static object InvokeStaticWithSingleArgument<T>(this MethodInfo mi, T arg)
     {
-      return mi.Invoke(null /*static*/, new object[] {arg});
+      object result = null;
+      try
+      {
+        result = mi.Invoke(null /*static*/, new object[] {arg});
+      }
+      catch
+      {
+        // we cannot reasonably catch this
+      }
+      return result;
     }
 
     public static object InvokeWithNoArgument<T>(this MethodInfo mi, T subject)
     {
       var pars = mi.GetParameters();
-      if (pars.IsSingleParamsArgument())
-        return mi.Invoke(subject, new[]
-        {
-          Activator.CreateInstance(pars[0].ParameterType.UnderlyingSystemType, 0)
-        });
-      else
+      object result = null;
+      try
       {
-        return mi.Invoke(subject, new object[] {});
-      }
+        if (pars.IsSingleParamsArgument())
+        {
+          result = mi.Invoke(subject, new[]
+          {
+            Activator.CreateInstance(pars[0].ParameterType.UnderlyingSystemType, 0)
+          });
+        }
+        else
+        {
+          result = mi.Invoke(subject, new object[] {});
+        }
+      } catch { }
+      return result;
     }
 
     public static bool IsSingleParamsArgument(this ParameterInfo[] ps)
@@ -95,6 +113,17 @@ namespace CallSharp
         yield return e;
       if (!insertAtStart)
         yield return extraElement;
+    }
+
+    public static string GetFriendlyName(this Type type)
+    {
+      var codeDomProvider = CodeDomProvider.CreateProvider("C#");
+      var typeReferenceExpression = new CodeTypeReferenceExpression(new CodeTypeReference(type));
+      using (var writer = new StringWriter())
+      {
+        codeDomProvider.GenerateCodeFromExpression(typeReferenceExpression, writer, new CodeGeneratorOptions());
+        return writer.GetStringBuilder().Replace("System.", string.Empty).ToString();
+      }
     }
   }
 }

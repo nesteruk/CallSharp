@@ -6,7 +6,7 @@ namespace CallSharp
 {
   static class TypeDatabase
   {
-    private static HashSet<Type> signedIntegralTypes = new HashSet<Type>
+    private static readonly HashSet<Type> signedIntegralTypes = new HashSet<Type>
     {
       typeof(int),
       typeof(long),
@@ -14,7 +14,7 @@ namespace CallSharp
       typeof(sbyte),
     };
 
-    private static HashSet<Type> unsignedIntegralTypes = new HashSet<Type>
+    private static readonly HashSet<Type> unsignedIntegralTypes = new HashSet<Type>
     {
       typeof(uint),
       typeof(ulong),
@@ -25,14 +25,14 @@ namespace CallSharp
     public static IEnumerable<Type> integralTypes =>
       signedIntegralTypes.Concat(unsignedIntegralTypes);
 
-    private static HashSet<Type> floatingPointTypes = new HashSet<Type>
+    private static readonly HashSet<Type> floatingPointTypes = new HashSet<Type>
     {
-      typeof(decimal),
-      typeof(double),
       typeof(float),
+      typeof(double),
+      typeof(decimal),
     };
 
-    private static HashSet<Type> dateTimeTypes = new HashSet<Type>
+    private static readonly HashSet<Type> dateTimeTypes = new HashSet<Type>
     {
       typeof(DateTime),
       typeof(TimeSpan),
