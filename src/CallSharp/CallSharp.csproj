@@ -71,7 +71,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MethodDatabase.cs" />
+    <Compile Include="MemberDatabase.cs" />
     <Compile Include="ObservableHashSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

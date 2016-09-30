@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace CallSharp
 {
-  public class MethodDatabase
+  public class MemberDatabase
   {
     public List<MethodInfo> methods = new List<MethodInfo>();
+    public List<PropertyInfo> properties = new List<PropertyInfo>();
 
-    public MethodDatabase()
+    public MemberDatabase()
     {
       // get each loaded assembly
       foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
@@ -20,9 +19,27 @@ namespace CallSharp
         // we only care about publicly visible types, right?
         foreach (var type in ass.ExportedTypes)
         {
-          methods.AddRange(type.GetMethods());
+          // since we index properties, ignore getter methods here
+          methods.AddRange(type.GetMethods().Where(
+            m => !m.Name.StartsWith("get_")));
+          properties.AddRange(type.GetProperties());
         }
       }
+    }
+
+    public IEnumerable<PropertyInfo> FindOneToOnePropertyGet(Type inputType,
+      Type outputType)
+    {
+      var x = properties.Where(p =>
+            p.DeclaringType == typeof(string))
+        .ToArray();
+
+      return properties.Where(p => // get properties where
+        p.DeclaringType == inputType // a property returns the right type
+        && p.GetMethod != null // it has a getter
+        && p.GetMethod.ReturnType == outputType // that returns the right type (duh!)
+        && !p.GetMethod.GetParameters().Any()
+      ); // and the getter takes no arguments
     }
 
     public IEnumerable<MethodInfo> FindOneToOneNonStatic(Type inputType, Type outputType)

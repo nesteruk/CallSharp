@@ -9,7 +9,7 @@
         Title="ActiveMesa CallSharp" Height="350" Width="525">
   
   <Window.Resources>
-    <FontFamily x:Key="theFont">Consolas,Courier New</FontFamily>
+    <FontFamily x:Key="theFont">PragmataPro Mono,Consolas,Courier New</FontFamily>
     <clr:Double x:Key="smallFontSize">10</clr:Double>
   </Window.Resources>
   

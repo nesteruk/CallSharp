@@ -11,17 +11,24 @@ namespace CallSharp
       typeof(bool)
     };
 
-    private static HashSet<Type> integralTypes = new HashSet<Type>
+    private static HashSet<Type> signedIntegralTypes = new HashSet<Type>
     {
-      typeof(long),
-      typeof(ulong),
       typeof(int),
-      typeof(uint),
+      typeof(long),
       typeof(short),
-      typeof(ushort),
-      typeof(byte),
       typeof(sbyte),
     };
+
+    private static HashSet<Type> unsignedIntegralTypes = new HashSet<Type>
+    {
+      typeof(uint),
+      typeof(ulong),
+      typeof(ushort),
+      typeof(byte),
+    };
+
+    public static IEnumerable<Type> integralTypes =>
+      signedIntegralTypes.Concat(unsignedIntegralTypes);
 
     private static HashSet<Type> floatingPointTypes = new HashSet<Type>
     {

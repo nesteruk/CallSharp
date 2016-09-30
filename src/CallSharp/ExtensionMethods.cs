@@ -52,11 +52,12 @@ namespace CallSharp
           x => x.Name.Equals("TryParse") 
           && x.GetParameters().Length == 2))
         {
-          var instance = Activator.CreateInstance(type);
-          bool ok = (bool) m.Invoke(null, new[] {text, instance});
+          // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
+          object[] pars = {text, null};
+          bool ok = (bool) m.Invoke(null, pars);
           if (ok)
           {
-            result.Add(instance);
+            result.Add(pars[1]);
           }
         }
       }
