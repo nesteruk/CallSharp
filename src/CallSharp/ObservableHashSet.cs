@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace CallSharp
@@ -20,7 +22,7 @@ namespace CallSharp
     /// </summary>
     public ObservableHashSet()
     {
-      this.hashSet = new HashSet<T>();
+      hashSet = new HashSet<T>();
     }
 
     /// <summary>
@@ -29,7 +31,7 @@ namespace CallSharp
     /// <param name="collection">The collection whose elements are copied to the new set.</param>
     public ObservableHashSet(IEnumerable<T> collection)
     {
-      this.hashSet = new HashSet<T>(collection);
+      hashSet = new HashSet<T>(collection);
     }
 
     /// <summary>
@@ -38,7 +40,7 @@ namespace CallSharp
     /// <param name="comparer">The IEqualityComparer&lt;T&gt; implementation to use when comparing values in the set, or null to use the default EqualityComparer&lt;T&gt; implementation for the set type.</param>
     public ObservableHashSet(IEqualityComparer<T> comparer)
     {
-      this.hashSet = new HashSet<T>(comparer);
+      hashSet = new HashSet<T>(comparer);
     }
 
     /// <summary>
@@ -48,7 +50,7 @@ namespace CallSharp
     /// <param name="comparer">The IEqualityComparer&lt;T&gt; implementation to use when comparing values in the set, or null to use the default EqualityComparer&lt;T&gt; implementation for the set type.</param>
     public ObservableHashSet(IEnumerable<T> collection, IEqualityComparer<T> comparer)
     {
-      this.hashSet = new HashSet<T>(collection, comparer);
+      hashSet = new HashSet<T>(collection, comparer);
     }
 
     /// <summary>
@@ -56,10 +58,10 @@ namespace CallSharp
     /// </summary>
     public void Dispose()
     {
-      if (this.monitor != null)
+      if (monitor != null)
       {
-        this.monitor.Dispose();
-        this.monitor = null;
+        monitor.Dispose();
+        monitor = null;
       }
     }
 
@@ -68,7 +70,7 @@ namespace CallSharp
     /// <summary>
     /// The property names used with INotifyPropertyChanged.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "A container for constants used with INotifyPropertyChanged.")]
+    [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "A container for constants used with INotifyPropertyChanged.")]
     public static class PropertyNames
     {
       public const string Count = "Count";
@@ -81,7 +83,7 @@ namespace CallSharp
     /// </summary>
     public IEqualityComparer<T> Comparer
     {
-      get { return this.hashSet.Comparer; }
+      get { return hashSet.Comparer; }
     }
 
 
@@ -93,7 +95,7 @@ namespace CallSharp
     ///   </returns>
     public int Count
     {
-      get { return this.hashSet.Count; }
+      get { return hashSet.Count; }
     }
 
     /// <summary>
@@ -103,7 +105,7 @@ namespace CallSharp
     ///   </returns>
     bool ICollection<T>.IsReadOnly
     {
-      get { return ((ICollection<T>)this.hashSet).IsReadOnly; }
+      get { return ((ICollection<T>)hashSet).IsReadOnly; }
     }
 
     #endregion
@@ -117,11 +119,11 @@ namespace CallSharp
 
     private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
     {
-      if (this.CollectionChanged != null)
+      if (CollectionChanged != null)
       {
-        using (this.BlockReentrancy())
+        using (BlockReentrancy())
         {
-          this.CollectionChanged(this, e);
+          CollectionChanged(this, e);
         }
       }
     }
@@ -133,9 +135,9 @@ namespace CallSharp
 
     private void RaisePropertyChanged(string propertyName)
     {
-      if (this.PropertyChanged != null)
+      if (PropertyChanged != null)
       {
-        this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
       }
     }
 
@@ -150,15 +152,15 @@ namespace CallSharp
     /// <returns>true if the element is added to the <see cref="ObservableHashSet&lt;T&gt;"/> object; false if the element is already present.</returns>
     public bool Add(T item)
     {
-      this.CheckReentrancy();
+      CheckReentrancy();
 
-      bool wasAdded = this.hashSet.Add(item);
+      bool wasAdded = hashSet.Add(item);
 
       if (wasAdded)
       {
-        int index = this.hashSet.IndexOf(item);
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        int index = hashSet.IndexOf(item);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+        RaisePropertyChanged(PropertyNames.Count);
       }
 
       return wasAdded;
@@ -173,7 +175,7 @@ namespace CallSharp
     ///   </exception>
     void ICollection<T>.Add(T item)
     {
-      this.Add(item);
+      Add(item);
     }
 
     /// <summary>
@@ -181,14 +183,14 @@ namespace CallSharp
     /// </summary>        
     public void Clear()
     {
-      this.CheckReentrancy();
+      CheckReentrancy();
 
-      if (this.hashSet.Count > 0)
+      if (hashSet.Count > 0)
       {
-        this.hashSet.Clear();
+        hashSet.Clear();
 
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        RaisePropertyChanged(PropertyNames.Count);
       }
     }
 
@@ -199,7 +201,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object contains the specified element; otherwise, false.</returns>
     public bool Contains(T item)
     {
-      return this.hashSet.Contains(item);
+      return hashSet.Contains(item);
     }
 
 
@@ -209,7 +211,7 @@ namespace CallSharp
     /// <param name="array">The one-dimensional array that is the destination of the elements copied from the <see cref="ObservableHashSet&lt;T&gt;"/> object. The array must have zero-based indexing.</param>
     public void CopyTo(T[] array)
     {
-      this.hashSet.CopyTo(array);
+      hashSet.CopyTo(array);
     }
 
     /// <summary>
@@ -219,7 +221,7 @@ namespace CallSharp
     /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
     public void CopyTo(T[] array, int arrayIndex)
     {
-      this.hashSet.CopyTo(array, arrayIndex);
+      hashSet.CopyTo(array, arrayIndex);
     }
 
     /// <summary>
@@ -230,7 +232,7 @@ namespace CallSharp
     /// <param name="count">The number of elements to copy to array.</param>
     public void CopyTo(T[] array, int arrayIndex, int count)
     {
-      this.hashSet.CopyTo(array, arrayIndex, count);
+      hashSet.CopyTo(array, arrayIndex, count);
     }
 
     /// <summary>
@@ -241,17 +243,17 @@ namespace CallSharp
     {
       //VerifyArgument.IsNotNull("other", other);
 
-      this.CheckReentrancy();
+      CheckReentrancy();
 
       // I locate items in other that are in the hashset
-      var removedItems = other.Where(x => this.hashSet.Contains(x)).ToList();
+      var removedItems = other.Where(x => hashSet.Contains(x)).ToList();
 
-      this.hashSet.ExceptWith(other);
+      hashSet.ExceptWith(other);
 
       if (removedItems.Count > 0)
       {
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
+        RaisePropertyChanged(PropertyNames.Count);
       }
     }
 
@@ -261,7 +263,7 @@ namespace CallSharp
     /// <returns>A <see cref="ObservableHashSet&lt;T&gt;"/>.Enumerator object for the <see cref="ObservableHashSet&lt;T&gt;"/> object.</returns>
     public IEnumerator<T> GetEnumerator()
     {
-      return this.hashSet.GetEnumerator();
+      return hashSet.GetEnumerator();
     }
 
     /// <summary>
@@ -272,17 +274,17 @@ namespace CallSharp
     {
       //VerifyArgument.IsNotNull("other", other);
 
-      this.CheckReentrancy();
+      CheckReentrancy();
 
       // I locate the items in the hashset that are not in other
-      var removedItems = this.hashSet.Where(x => !other.Contains(x)).ToList();
+      var removedItems = hashSet.Where(x => !other.Contains(x)).ToList();
 
-      this.hashSet.IntersectWith(other);
+      hashSet.IntersectWith(other);
 
       if (removedItems.Count > 0)
       {
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
+        RaisePropertyChanged(PropertyNames.Count);
       }
     }
 
@@ -293,7 +295,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object is a proper subset of other; otherwise, false.</returns>
     public bool IsProperSubsetOf(IEnumerable<T> other)
     {
-      return this.hashSet.IsProperSubsetOf(other);
+      return hashSet.IsProperSubsetOf(other);
     }
 
     /// <summary>
@@ -303,7 +305,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object is a proper superset of other; otherwise, false.</returns>
     public bool IsProperSupersetOf(IEnumerable<T> other)
     {
-      return this.hashSet.IsProperSupersetOf(other);
+      return hashSet.IsProperSupersetOf(other);
     }
 
     /// <summary>
@@ -313,7 +315,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object is a subset of other; otherwise, false.</returns>
     public bool IsSubsetOf(IEnumerable<T> other)
     {
-      return this.hashSet.IsSubsetOf(other);
+      return hashSet.IsSubsetOf(other);
     }
 
     /// <summary>
@@ -323,7 +325,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object is a superset of other; otherwise, false.</returns>
     public bool IsSupersetOf(IEnumerable<T> other)
     {
-      return this.hashSet.IsSupersetOf(other);
+      return hashSet.IsSupersetOf(other);
     }
 
     /// <summary>
@@ -333,7 +335,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object and other share at least one common element; otherwise, false.</returns>
     public bool Overlaps(IEnumerable<T> other)
     {
-      return this.hashSet.Overlaps(other);
+      return hashSet.Overlaps(other);
     }
 
     /// <summary>
@@ -343,14 +345,14 @@ namespace CallSharp
     /// <returns>true if the element is successfully found and removed; otherwise, false. This method returns false if item is not found in the <see cref="ObservableHashSet&lt;T&gt;"/> object.</returns>
     public bool Remove(T item)
     {
-      int index = this.hashSet.IndexOf(item);
-      bool wasRemoved = this.hashSet.Remove(item);
+      int index = hashSet.IndexOf(item);
+      bool wasRemoved = hashSet.Remove(item);
 
       if (wasRemoved)
       {
 
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+        RaisePropertyChanged(PropertyNames.Count);
       }
 
       return wasRemoved;
@@ -363,7 +365,7 @@ namespace CallSharp
     /// <returns>true if the <see cref="ObservableHashSet&lt;T&gt;"/> object is equal to other; otherwise, false.</returns>
     public bool SetEquals(IEnumerable<T> other)
     {
-      return this.hashSet.SetEquals(other);
+      return hashSet.SetEquals(other);
     }
 
     /// <summary>
@@ -373,30 +375,30 @@ namespace CallSharp
     public void SymmetricExceptWith(IEnumerable<T> other)
     {
       //VerifyArgument.IsNotNull("other", other);
-      this.CheckReentrancy();
+      CheckReentrancy();
 
       // I locate the items in other that are not in the hashset
-      var addedItems = other.Where(x => !this.hashSet.Contains(x)).ToList();
+      var addedItems = other.Where(x => !hashSet.Contains(x)).ToList();
 
       // I locate items in other that are in the hashset
-      var removedItems = other.Where(x => this.hashSet.Contains(x)).ToList();
+      var removedItems = other.Where(x => hashSet.Contains(x)).ToList();
 
-      this.hashSet.SymmetricExceptWith(other);
+      hashSet.SymmetricExceptWith(other);
 
       if (removedItems.Count > 0)
       {
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
+        RaisePropertyChanged(PropertyNames.Count);
       }
 
       if (addedItems.Count > 0)
       {
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
       }
 
       if (removedItems.Count > 0 || addedItems.Count > 0)
       {
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaisePropertyChanged(PropertyNames.Count);
       }
     }
 
@@ -405,7 +407,7 @@ namespace CallSharp
     /// </summary>
     public void TrimExcess()
     {
-      this.hashSet.TrimExcess();
+      hashSet.TrimExcess();
     }
 
     /// <summary>
@@ -415,17 +417,17 @@ namespace CallSharp
     public void UnionWith(IEnumerable<T> other)
     {
       //VerifyArgument.IsNotNull("other", other);
-      this.CheckReentrancy();
+      CheckReentrancy();
 
       // I locate the items in other that are not in the hashset
-      var addedItems = other.Where(x => !this.hashSet.Contains(x)).ToList();
+      var addedItems = other.Where(x => !hashSet.Contains(x)).ToList();
 
-      this.hashSet.UnionWith(other);
+      hashSet.UnionWith(other);
 
       if (addedItems.Count > 0)
       {
-        this.RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
-        this.RaisePropertyChanged(PropertyNames.Count);
+        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
+        RaisePropertyChanged(PropertyNames.Count);
       }
     }
 
@@ -435,9 +437,9 @@ namespace CallSharp
     /// <returns>
     /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
     /// </returns>
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+    IEnumerator IEnumerable.GetEnumerator()
     {
-      return ((System.Collections.IEnumerable)this.hashSet).GetEnumerator();
+      return ((IEnumerable)hashSet).GetEnumerator();
     }
 
     #endregion
@@ -446,13 +448,13 @@ namespace CallSharp
 
     private IDisposable BlockReentrancy()
     {
-      this.monitor.Enter();
-      return this.monitor;
+      monitor.Enter();
+      return monitor;
     }
 
     private void CheckReentrancy()
     {
-      if ((this.monitor.Busy && (this.CollectionChanged != null)) && (this.CollectionChanged.GetInvocationList().Length > 1))
+      if ((monitor.Busy && (CollectionChanged != null)) && (CollectionChanged.GetInvocationList().Length > 1))
       {
         throw new InvalidOperationException("There are additional attempts to change this hash set during a CollectionChanged event.");
       }
@@ -468,21 +470,15 @@ namespace CallSharp
 
       public void Dispose()
       {
-        this._busyCount--;
+        _busyCount--;
       }
 
       public void Enter()
       {
-        this._busyCount++;
+        _busyCount++;
       }
 
-      public bool Busy
-      {
-        get
-        {
-          return (this._busyCount > 0);
-        }
-      }
+      public bool Busy => (_busyCount > 0);
     }
 
 

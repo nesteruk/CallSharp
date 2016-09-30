@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -30,12 +29,8 @@ namespace CallSharp
     public IEnumerable<PropertyInfo> FindOneToOnePropertyGet(Type inputType,
       Type outputType)
     {
-      var x = properties.Where(p =>
-            p.DeclaringType == typeof(string))
-        .ToArray();
-
       return properties.Where(p => // get properties where
-        p.DeclaringType == inputType // a property returns the right type
+        p.DeclaringType.IsConvertibleTo(inputType)
         && p.GetMethod != null // it has a getter
         && p.GetMethod.ReturnType == outputType // that returns the right type (duh!)
         && !p.GetMethod.GetParameters().Any()

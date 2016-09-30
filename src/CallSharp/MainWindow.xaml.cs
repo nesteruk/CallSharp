@@ -1,13 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Documents;
 
 namespace CallSharp
 {
-  /// <summary>
-  /// Interaction logic for MainWindow.xaml
-  /// </summary>
   public partial class MainWindow : Window
   {
     private MemberDatabase memberDatabase = new MemberDatabase();
@@ -57,6 +56,7 @@ namespace CallSharp
       var self = (MainWindow) d;
 
       var parsedValues = ((string) e.NewValue).InferTypes();
+      parsedValues.Add(e.NewValue);
       if (parsedValues.Any())
       {
         self.parsedInputValue = parsedValues[0];
@@ -105,10 +105,40 @@ namespace CallSharp
     {
       var self = (MainWindow) d;
       var parsedValues = ((string)e.NewValue).InferTypes();
+      parsedValues.Add(e.NewValue);
       if (parsedValues.Any())
       {
         self.parsedOutputValue = parsedValues[0];
         self.OutputType = self.parsedOutputValue.GetType();
+
+        self.AlternateOutputValues.Inlines.Clear();
+        foreach (var i in parsedValues)
+        {
+          if (self.OutputType != i.GetType())
+          {
+            Hyperlink h = new Hyperlink();
+            h.Inlines.Add(i.GetType().GetFriendlyName());
+            h.Tag = i;
+            h.Click += (sender, args) =>
+            {
+              var me = (Hyperlink)sender;
+              // cache the current type
+              Type currentType = self.InputType;
+              // set the new type
+              self.OutputType = me.Tag.GetType();
+              self.parsedOutputValue = me.Tag;
+              // restore my type and name
+              me.Inlines.Clear();
+              me.Inlines.Add(currentType.GetFriendlyName());
+              me.Tag = currentType;
+            };
+            Span s = new Span(h);
+            s.Inlines.Add(" ");
+            self.AlternateOutputValues.Inlines.Add(s);
+          }
+        }
+
+
       }
     }
 
@@ -120,7 +150,7 @@ namespace CallSharp
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
-
+      
       // if input and output are identical, be sure to add it
       if (InputText == OutputText)
         Candidates.Add("input");
@@ -128,23 +158,37 @@ namespace CallSharp
       var input = InputText.InferTypes().FirstOrDefault() ?? InputText;
       var output = OutputText.InferTypes().FirstOrDefault() ?? OutputText;
 
+      SetProgress("Looking for 1-to-1 static calls.");
+
+      // methods which did not yield the desired output
+      // they are to be reused for 2+ chain calls
+      List<MethodCallCookie> failingMethods = new List<MethodCallCookie>();
+
       foreach (
         var m in memberDatabase.FindOneToOneNonStatic(
           input.GetType(), output.GetType()))
       {
-        object actualOutput = m.InvokeWithNoArgument(input);
-        if (output.Equals(actualOutput))
+        var cookie = m.InvokeWithNoArgument(input);
+        if (output.Equals(cookie.ReturnValue))
           Candidates.Add("input." + m.Name + "()");
+        else
+          failingMethods.Add(cookie);
       }
+
+      SetProgress("Looking for 1-to-1 member calls.");
 
       foreach (
         var m in memberDatabase.FindOneToOneStatic(
           input.GetType(), output.GetType()))
       {
-        var actualOutput = m.InvokeStaticWithSingleArgument(input);
-        if (output.Equals(actualOutput))
+        var cookie = m.InvokeStaticWithSingleArgument(input);
+        if (output.Equals(cookie.ReturnValue))
           Candidates.Add($"{m.DeclaringType?.Name}.{m.Name}(input)");
+        else
+          failingMethods.Add(cookie);
       }
+
+      SetProgress("Looking for properties.");
 
       foreach (
         var p in
@@ -153,8 +197,18 @@ namespace CallSharp
       {
         var actualOutput = p.GetMethod.Invoke(input, noArgs);
         if (output.Equals(actualOutput))
-          Candidates.Add("input." + p.Name);
+        {
+          var sb = new StringBuilder();
+          if (actualOutput.GetType() != OutputType)
+            sb.Append($"({OutputType.GetFriendlyName()})");
+          sb.Append("input." + p.Name);
+          Candidates.Add(sb.ToString());
+        }
       }
+
+      SetProgress(Candidates.Any()
+        ? $"Found {Candidates.Count} call chain{(Candidates.Count % 10 == 1 ? string.Empty : "s")}"
+        : "Could not find any call chains for given input/output");
     }
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)
@@ -164,6 +218,11 @@ namespace CallSharp
         Clipboard.SetText(LbCandidates.SelectedItem.ToString());
         TbInfo.Text = "Text copied to clipboard.";
       }
+    }
+
+    private void SetProgress(string s)
+    {
+      TbInfo.Text = s;
     }
   }
 }

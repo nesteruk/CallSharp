@@ -27,7 +27,7 @@
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
-      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Label HorizontalAlignment="Right">Input:</Label>
     <TextBox Grid.Row="0" Grid.Column="1" FontFamily="{StaticResource theFont}" Margin="3"
@@ -38,9 +38,7 @@
                Margin="2">
       <Span>Input treated as: </Span>
       <Run FontWeight="Bold" Text="{Binding InputType, Converter={StaticResource typeToString}}"/>
-      <Span x:Name="AlternateInputValues">
-        
-      </Span>
+      <Span x:Name="AlternateInputValues" />
     </TextBlock>
 
     <Label Grid.Row="2">Expected output:</Label>
@@ -69,7 +67,7 @@
     
     <StatusBar Grid.Row="5" Grid.ColumnSpan="2">
       <StatusBarItem>
-        <TextBlock Name="TbInfo" FontSize="{StaticResource smallFontSize}"></TextBlock>
+        <TextBlock Name="TbInfo" FontSize="{StaticResource smallFontSize}" />
       </StatusBarItem>
       <!--<StatusBarItem>
         <ProgressBar></ProgressBar>
@@ -77,5 +75,19 @@
     </StatusBar>
   </Grid>
 </Window>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
   

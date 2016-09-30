@@ -20,12 +20,14 @@ namespace CallSharp
       return pi.GetCustomAttribute<ParamArrayAttribute>() != null;
     }
 
-    public static object InvokeStaticWithSingleArgument<T>(this MethodInfo mi, T arg)
+    public static MethodCallCookie InvokeStaticWithSingleArgument<T>(this MethodInfo mi, T arg)
     {
-      object result = null;
+      MethodCallCookie result = null;
       try
       {
-        result = mi.Invoke(null /*static*/, new object[] {arg});
+        var args = new object[] {arg};
+        var retval = mi.Invoke(null /*static*/, args);
+        result = new MethodCallCookie(mi, args, retval);
       }
       catch
       {
@@ -34,22 +36,25 @@ namespace CallSharp
       return result;
     }
 
-    public static object InvokeWithNoArgument<T>(this MethodInfo mi, T subject)
+    public static MethodCallCookie InvokeWithNoArgument<T>(this MethodInfo mi, T subject)
     {
       var pars = mi.GetParameters();
-      object result = null;
+      MethodCallCookie result = null;
       try
       {
         if (pars.IsSingleParamsArgument())
         {
-          result = mi.Invoke(subject, new[]
+          var args = new[]
           {
             Activator.CreateInstance(pars[0].ParameterType.UnderlyingSystemType, 0)
-          });
+          };
+          var retval = mi.Invoke(subject, args);
+          result = new MethodCallCookie(mi, args, retval);
         }
         else
         {
-          result = mi.Invoke(subject, new object[] {});
+          var retval = mi.Invoke(subject, Empty.ObjectArray);
+          result = new MethodCallCookie(mi, Empty.ObjectArray, retval);
         }
       } catch { }
       return result;
@@ -60,7 +65,7 @@ namespace CallSharp
       return ps.Length == 1 && ps[0].IsParams();
     }
 
-    public static IReadOnlyList<object> InferTypes(this string text)
+    public static IList<object> InferTypes(this string text)
     {
       var result = new List<object>();
 
@@ -124,6 +129,38 @@ namespace CallSharp
         codeDomProvider.GenerateCodeFromExpression(typeReferenceExpression, writer, new CodeGeneratorOptions());
         return writer.GetStringBuilder().Replace("System.", string.Empty).ToString();
       }
+    }
+
+    static Dictionary<Type, List<Type>> conversionMap = new Dictionary<Type, List<Type>>
+    {
+        { typeof(decimal), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
+        { typeof(double), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
+        { typeof(float), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
+        { typeof(ulong), new List<Type> { typeof(byte), typeof(ushort), typeof(uint), typeof(char) } },
+        { typeof(long), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(char) } },
+        { typeof(uint), new List<Type> { typeof(byte), typeof(ushort), typeof(char) } },
+        { typeof(int), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(char) } },
+        { typeof(ushort), new List<Type> { typeof(byte), typeof(char) } },
+        { typeof(short), new List<Type> { typeof(byte) } }
+    };
+
+    public static bool IsConvertibleTo(this Type from, Type to)
+    {
+      if (to.IsAssignableFrom(from))
+      {
+        return true;
+      }
+      if (conversionMap.ContainsKey(to) && conversionMap[to].Contains(from))
+      {
+        return true;
+      }
+      bool castable = from.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                      .Any(
+                          m => m.ReturnType == to &&
+                          (m.Name == "op_Implicit" ||
+                          m.Name == "op_Explicit")
+                      );
+      return castable;
     }
   }
 }
