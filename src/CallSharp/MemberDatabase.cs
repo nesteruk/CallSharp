@@ -67,11 +67,11 @@ namespace CallSharp
       foreach (var method in methods.Where(m =>
         m.ReturnType == outputType 
         && TypeDatabase.CoreTypes.Contains(m.DeclaringType)
-        && !m.Name.Equals("Parse") // it throws :(
+        && !m.Name.Equals("Parse") // it throws 
         ))
       {
-        if (method.Name.Equals("IsNullOrWhitespace"))
-          Debugger.Break();
+        if (method.Name.Contains("Delete"))
+          throw new Exception("Just in case!");
 
         var pars = method.GetParameters();
         
