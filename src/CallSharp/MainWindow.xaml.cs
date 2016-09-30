@@ -170,7 +170,7 @@ namespace CallSharp
       {
         var cookie = m.InvokeWithNoArgument(input);
         if (output.Equals(cookie.ReturnValue))
-          Candidates.Add("input." + m.Name + "()");
+          Candidates.Add("input" + cookie);
         else
           failingMethods.Add(cookie);
       }
@@ -183,28 +183,12 @@ namespace CallSharp
       {
         var cookie = m.InvokeStaticWithSingleArgument(input);
         if (output.Equals(cookie.ReturnValue))
-          Candidates.Add($"{m.DeclaringType?.Name}.{m.Name}(input)");
+          Candidates.Add($"{m.DeclaringType?.Name}${cookie}");
         else
           failingMethods.Add(cookie);
       }
 
       SetProgress("Looking for properties.");
-
-      foreach (
-        var p in
-        memberDatabase.FindOneToOnePropertyGet(input.GetType(),
-          output.GetType()))
-      {
-        var actualOutput = p.GetMethod.Invoke(input, noArgs);
-        if (output.Equals(actualOutput))
-        {
-          var sb = new StringBuilder();
-          if (actualOutput.GetType() != OutputType)
-            sb.Append($"({OutputType.GetFriendlyName()})");
-          sb.Append("input." + p.Name);
-          Candidates.Add(sb.ToString());
-        }
-      }
 
       SetProgress(Candidates.Any()
         ? $"Found {Candidates.Count} call chain{(Candidates.Count % 10 == 1 ? string.Empty : "s")}"

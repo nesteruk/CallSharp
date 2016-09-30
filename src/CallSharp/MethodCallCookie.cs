@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Text;
 
 namespace CallSharp
 {
@@ -26,5 +27,36 @@ namespace CallSharp
     /// The type of the return value.
     /// </summary>
     public Type ReturnType => ReturnValue.GetType();
+
+    public override string ToString()
+    {
+      var sb = new StringBuilder();
+
+      // we either called it on a member . or on static X.
+      if (MethodCalled.IsStatic)
+        sb.Append(MethodCalled.DeclaringType.GetFriendlyName());
+      sb.Append(".");
+
+      if (MethodCalled.Name.StartsWith("get_"))
+        sb.Append(MethodCalled.Name.Substring(4));
+      else
+      {
+        sb.Append(MethodCalled.Name).Append("(");
+
+        for (int i = 0; i < Arguments.Length; i++)
+        {
+          var arg = Arguments[i];
+
+          // todo: literalize argument into code
+          sb.Append(arg);
+
+          if (i+1 != Arguments.Length)
+            sb.Append(", ");
+        }
+
+        sb.Append(")");
+      }
+      return sb.ToString();
+    }
   }
 }

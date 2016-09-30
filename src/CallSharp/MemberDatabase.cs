@@ -8,7 +8,6 @@ namespace CallSharp
   public class MemberDatabase
   {
     public List<MethodInfo> methods = new List<MethodInfo>();
-    public List<PropertyInfo> properties = new List<PropertyInfo>();
 
     public MemberDatabase()
     {
@@ -19,22 +18,9 @@ namespace CallSharp
         foreach (var type in ass.ExportedTypes)
         {
           // since we index properties, ignore getter methods here
-          methods.AddRange(type.GetMethods().Where(
-            m => !m.Name.StartsWith("get_")));
-          properties.AddRange(type.GetProperties());
+          methods.AddRange(type.GetMethods());
         }
       }
-    }
-
-    public IEnumerable<PropertyInfo> FindOneToOnePropertyGet(Type inputType,
-      Type outputType)
-    {
-      return properties.Where(p => // get properties where
-        p.DeclaringType.IsConvertibleTo(inputType)
-        && p.GetMethod != null // it has a getter
-        && p.GetMethod.ReturnType == outputType // that returns the right type (duh!)
-        && !p.GetMethod.GetParameters().Any()
-      ); // and the getter takes no arguments
     }
 
     public IEnumerable<MethodInfo> FindOneToOneNonStatic(Type inputType, Type outputType)
