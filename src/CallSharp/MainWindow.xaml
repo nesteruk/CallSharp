@@ -54,17 +54,17 @@
     <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="0">
       <Button Height="50" Margin="3" VerticalAlignment="Top"
               x:Name="BtnSearch" Click="BtnSearch_OnClick">Search!</Button>
-      <Button Height="50" Margin="3" VerticalAlignment="Top">Copy Selected</Button>
+      <Button Height="50" Margin="3" VerticalAlignment="Top"
+              x:Name="BtnCopy" Click="BtnCopy_OnClick">Copy Selected</Button>
     </StackPanel>
     <ListBox Grid.Row="4" Grid.Column="1" Margin="3" 
              FontFamily="{StaticResource theFont}"
-             ItemsSource="{Binding Candidates}"/>
+             ItemsSource="{Binding Candidates}"
+             x:Name="LbCandidates"/>
     
     <StatusBar Grid.Row="5" Grid.ColumnSpan="2">
       <StatusBarItem>
-        <Label Name="LblInfo" FontSize="{StaticResource smallFontSize}">
-          Trying option
-        </Label>
+        <TextBlock Name="TbInfo" FontSize="{StaticResource smallFontSize}"></TextBlock>
       </StatusBarItem>
       <StatusBarItem>
         <ProgressBar></ProgressBar>

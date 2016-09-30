@@ -66,5 +66,14 @@ namespace CallSharp
           Candidates.Add("input." + p.Name);
       }
     }
+
+    private void BtnCopy_OnClick(object sender, RoutedEventArgs e)
+    {
+      if (LbCandidates.SelectedIndex >= 0)
+      {
+        Clipboard.SetText(LbCandidates.SelectedItem.ToString());
+        TbInfo.Text = "Text copied to clipboard.";
+      }
+    }
   }
 }
