@@ -23,6 +23,37 @@ namespace CallSharp
       }
     }
 
+    /// <summary>
+    /// Locates any non-static method of <code>inputType</code> that yields a
+    /// value that is expressly <em>not</em> of <c>ignoreOutputType</c>.
+    /// </summary>
+    /// <param name="inputType">The type on which to search for member functions.</param>
+    /// <param name="ignoreThisOutputType">Optional return type to avoid including in the results.</param>
+    /// <returns>
+    /// The reason why <c>ignoreOutputType</c> exists is that when making the primary search,
+    /// we search explicitly for f:A->B and already have cookies from those searches. We want
+    /// to avoid performing the search again, so we search for f:A->Z where Z != B.
+    /// </returns>
+    public IEnumerable<MethodInfo> FindAnyToOneNonStatic(Type inputType, Type ignoreThisOutputType)
+    {
+      foreach (var method in methods.Where(m =>
+        m.DeclaringType == inputType &&
+        m.ReturnType != ignoreThisOutputType &&
+        TypeDatabase.CoreTypes.Contains(m.ReturnType) // safety!
+        ))
+      {
+        var pars = method.GetParameters();
+
+        if (!method.IsStatic &&
+            (pars.Length == 0
+             || pars.AllAreOptional()
+             || pars.IsSingleParamsArgument()))
+        {
+          yield return method;
+        }
+      }
+    }
+
     public IEnumerable<MethodInfo> FindOneToOneNonStatic(Type inputType, Type outputType)
     {
       foreach (var method in methods.Where(m => 

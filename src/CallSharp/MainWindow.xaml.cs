@@ -137,8 +137,6 @@ namespace CallSharp
             self.AlternateOutputValues.Inlines.Add(s);
           }
         }
-
-
       }
     }
 
@@ -150,45 +148,59 @@ namespace CallSharp
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
-      
+      FindCandidates(parsedInputValue, parsedOutputValue, 0);
+    }
+
+    private void FindCandidates(object input, object output, int depth, string callChain = "")
+    {
       // if input and output are identical, be sure to add it
       if (InputText == OutputText)
+      {
         Candidates.Add("input");
+        return; // let's not chain-call this (unless you want to obfuscate)
+      }
 
-      var input = InputText.InferTypes().FirstOrDefault() ?? InputText;
-      var output = OutputText.InferTypes().FirstOrDefault() ?? OutputText;
+      // contains all calls that didn't yield the right result
+      var failCookies = new List<MethodCallCookie>();
 
-      SetProgress("Looking for 1-to-1 static calls.");
+      SetProgress("Looking for 1-to-1 member calls.");
 
-      // methods which did not yield the desired output
-      // they are to be reused for 2+ chain calls
-      List<MethodCallCookie> failingMethods = new List<MethodCallCookie>();
-
-      foreach (
-        var m in memberDatabase.FindOneToOneNonStatic(
+      foreach (var m in memberDatabase.FindOneToOneNonStatic(
           input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeWithNoArgument(input);
         if (output.Equals(cookie.ReturnValue))
-          Candidates.Add("input" + cookie);
+          Candidates.Add("input" + callChain + cookie);
         else
-          failingMethods.Add(cookie);
+        {
+          failCookies.Add(cookie);
+        }
       }
 
-      SetProgress("Looking for 1-to-1 member calls.");
+      SetProgress("Looking for 1-to-1 static calls.");
 
-      foreach (
-        var m in memberDatabase.FindOneToOneStatic(
+      foreach (var m in memberDatabase.FindOneToOneStatic(
           input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeStaticWithSingleArgument(input);
         if (output.Equals(cookie.ReturnValue))
           Candidates.Add($"{m.DeclaringType?.Name}${cookie}");
-        else
-          failingMethods.Add(cookie);
       }
 
-      SetProgress("Looking for properties.");
+      if (!Candidates.Any() && depth < 2)
+      {
+        // if we found nothing of worth, try a chain
+        foreach (
+          var m in memberDatabase.FindAnyToOneNonStatic(input.GetType(), output.GetType())
+        )
+        {
+          // get the cookie for this invocation
+          var cookie = m.InvokeWithNoArgument(input);
+
+          // pass it on
+          FindCandidates(cookie.ReturnValue, output, depth+1, cookie.ToString());
+        }
+      }
 
       SetProgress(Candidates.Any()
         ? $"Found {Candidates.Count} call chain{(Candidates.Count % 10 == 1 ? string.Empty : "s")}"

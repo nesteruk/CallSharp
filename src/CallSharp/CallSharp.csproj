@@ -55,6 +55,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Empty.cs" />
+    <Compile Include="FragmentationExtensions.cs" />
     <Compile Include="MethodCallCookie.cs" />
     <Compile Include="TypeDatabase.cs" />
     <Compile Include="TypeToStringConverter.cs" />

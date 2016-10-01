@@ -47,6 +47,12 @@ namespace CallSharp
         {
           var arg = Arguments[i];
 
+          // caveat: calling a params[] really passes in a single
+          // 0-sized array :( need special handling
+          var arr = arg as Array;
+          if (arr != null && arr.Length == 0)
+            break;
+
           // todo: literalize argument into code
           sb.Append(arg);
 
