@@ -216,7 +216,14 @@ namespace CallSharp
           var cookie = m.InvokeWithNoArgument(input);
           
           // pass it on
-          FindCandidates(cookie.ReturnValue, output, depth+1, cookie.ToString());
+          FindCandidates(cookie.ReturnValue, output, depth+1, callChain+cookie);
+        }
+        
+
+        // we already have call results for some invocation chains, why not try those?
+        foreach (var fc in failCookies)
+        {
+          FindCandidates(fc.ReturnValue, output, depth+1, callChain+fc);
         }
       }
 
