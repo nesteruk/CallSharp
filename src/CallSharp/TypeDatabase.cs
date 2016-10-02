@@ -43,6 +43,7 @@ namespace CallSharp
       .Prepend(typeof(bool))
       .Concat(floatingPointTypes)
       .Concat(dateTimeTypes)
+      .Append(typeof(char))
       .Append(typeof(string));
 
     public static IEnumerable<Type> CoreTypes => ParseableTypes;

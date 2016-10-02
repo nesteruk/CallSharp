@@ -30,6 +30,11 @@ namespace CallSharp
 
     public override string ToString()
     {
+      return ToString(String.Empty);
+    }
+
+    public string ToString(string inner)
+    {
       var sb = new StringBuilder();
 
       // we either called it on a member . or on static X.
@@ -43,7 +48,8 @@ namespace CallSharp
       {
         sb.Append(MethodCalled.Name).Append("(");
 
-        for (int i = 0; i < Arguments.Length; i++)
+        int start = MethodCalled.IsStatic ? 1 : 0;
+        for (int i = start; i < Arguments.Length; i++)
         {
           var arg = Arguments[i];
           
@@ -59,6 +65,10 @@ namespace CallSharp
           if (i+1 != Arguments.Length)
             sb.Append(", ");
         }
+
+        // on the other hand, a static call has NO arguments, so...
+        if (MethodCalled.IsStatic)
+          sb.Append($"input{inner}");
 
         sb.Append(")");
       }

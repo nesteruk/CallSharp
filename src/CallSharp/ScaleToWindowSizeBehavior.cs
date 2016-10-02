@@ -5,6 +5,10 @@ using System.Windows.Media;
 
 namespace CallSharp
 {
+  /// <summary>
+  /// Attached behavior for scaling the window components proportionally.
+  /// To be used only for demonstrations.
+  /// </summary>
   public static class ScaleToWindowSizeBehavior
   {
     public static readonly DependencyProperty ParentWindowProperty =

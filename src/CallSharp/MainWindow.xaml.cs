@@ -167,8 +167,10 @@ namespace CallSharp
 
     private void FindCandidates(object input, object output, int depth, string callChain = "")
     {
+      TbLevel.Text = depth.ToString();
+
       // if input and output are identical, be sure to add it
-      if (InputText == OutputText)
+      if (InputText == OutputText && InputType == OutputType)
       {
         Candidates.Add("input");
         return; // let's not chain-call this (unless you want to obfuscate)
@@ -177,8 +179,19 @@ namespace CallSharp
       // contains all calls that didn't yield the right result
       var failCookies = new List<MethodCallCookie>();
 
-      SetProgress("Looking for 1-to-1 member calls.");
+      SetProgress("Looking for converting constructors");
 
+      foreach (
+        var ctor in memberDatabase.FindConstructorFor(input.GetType(), output.GetType()))
+      {
+        // construct exactly this type of object
+        object instance = ctor.Invoke(new[] {input});
+        if (instance.Equals(output))
+          Candidates.Add($"new {ctor.ReflectedType.GetFriendlyName()}(" + callChain + ")");
+      }
+
+      SetProgress("Looking for 1-to-1 member calls.");
+      
       foreach (var m in memberDatabase.FindOneToOneNonStatic(
           input.GetType(), output.GetType()))
       {
@@ -198,14 +211,17 @@ namespace CallSharp
       {
         var cookie = m.InvokeStaticWithSingleArgument(input);
         if (output.Equals(cookie?.ReturnValue))
-          Candidates.Add($"{m.DeclaringType?.Name}{callChain}{cookie}");
+        {
+          if (cookie != null && !Equals(cookie.ReturnValue, input))
+            Candidates.Add(cookie.ToString(callChain));
+        }
         else
         {
           failCookies.Add(cookie);
         }
       }
 
-      if (!Candidates.Any() && depth < 2)
+      if (!Candidates.Any() && depth < 3)
       {
         // if we found nothing of worth, try a chain
         foreach (
@@ -216,12 +232,21 @@ namespace CallSharp
           var cookie = m.InvokeWithNoArgument(input);
           
           // pass it on
-          FindCandidates(cookie.ReturnValue, output, depth+1, callChain+cookie);
+          if (cookie != null && !Equals(cookie.ReturnValue, input))
+            FindCandidates(cookie.ReturnValue, output, depth+1, callChain+cookie);
         }
-        
+
+        // could be a static call of some arbitrary type
+        foreach (
+          var m in memberDatabase.FindAnyToOneStatic(input.GetType(), output.GetType()))
+        {
+          var cookie = m.InvokeStaticWithSingleArgument(input);
+          if (cookie != null && !Equals(cookie.ReturnValue, input))
+            FindCandidates(cookie.ReturnValue, output, depth+1, callChain+cookie);
+        }
 
         // we already have call results for some invocation chains, why not try those?
-        foreach (var fc in failCookies)
+        foreach (var fc in failCookies.Where(fc => fc != null && !Equals(fc.ReturnValue, input)))
         {
           FindCandidates(fc.ReturnValue, output, depth+1, callChain+fc);
         }

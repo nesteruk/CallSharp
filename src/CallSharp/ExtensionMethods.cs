@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace CallSharp
 {
@@ -20,6 +22,7 @@ namespace CallSharp
       return pi.GetCustomAttribute<ParamArrayAttribute>() != null;
     }
 
+    [CanBeNull]
     public static MethodCallCookie InvokeStaticWithSingleArgument<T>(this MethodInfo mi, T arg)
     {
       MethodCallCookie result = null;
@@ -36,6 +39,7 @@ namespace CallSharp
       return result;
     }
 
+    [CanBeNull]
     public static MethodCallCookie InvokeWithNoArgument<T>(this MethodInfo mi, T subject)
     {
       var pars = mi.GetParameters();
@@ -58,6 +62,12 @@ namespace CallSharp
         }
       } catch { }
       return result;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsIn<T>(this T obj, IEnumerable<T> collection)
+    {
+      return collection.Contains(obj);
     }
 
     public static bool IsSingleParamsArgument(this ParameterInfo[] ps)
@@ -146,7 +156,7 @@ namespace CallSharp
 
     public static bool IsConvertibleTo(this Type from, Type to)
     {
-      if (to.IsAssignableFrom(from))
+      if (from == to || to.IsAssignableFrom(from))
       {
         return true;
       }
