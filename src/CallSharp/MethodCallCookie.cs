@@ -46,7 +46,7 @@ namespace CallSharp
         for (int i = 0; i < Arguments.Length; i++)
         {
           var arg = Arguments[i];
-
+          
           // caveat: calling a params[] really passes in a single
           // 0-sized array :( need special handling
           var arr = arg as Array;

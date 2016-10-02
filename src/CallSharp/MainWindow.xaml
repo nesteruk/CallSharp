@@ -6,7 +6,7 @@
         xmlns:me="clr-namespace:CallSharp"
         xmlns:clr="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d" x:Name="mainWindow"
-        Title="ActiveMesa CallSharp" Height="350" Width="525">
+        Title="ActiveMesa CallSharp" Height="300" Width="400">
   
   <Window.Resources>
     <FontFamily x:Key="theFont">PragmataPro Mono,Consolas,Courier New</FontFamily>
@@ -14,7 +14,10 @@
     <me:TypeToStringConverter x:Key="typeToString"/>
   </Window.Resources>
   
-  <Grid DataContext="{Binding ElementName=mainWindow, Path=.}">
+  <Grid DataContext="{Binding ElementName=mainWindow, Path=.}"
+        me:ScaleToWindowSizeBehavior.Denominators="400, 300"
+        me:ScaleToWindowSizeBehavior.ParentWindow="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+    >
 
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="Auto"/>
@@ -59,6 +62,7 @@
               x:Name="BtnSearch" Click="BtnSearch_OnClick">Search!</Button>
       <Button Height="50" Margin="3" VerticalAlignment="Top"
               x:Name="BtnCopy" Click="BtnCopy_OnClick">Copy Selected</Button>
+      <CheckBox Margin="3" x:Name="CbScaleWindow" Checked="ToggleButton_OnChecked">Scale window</CheckBox>
     </StackPanel>
     <ListBox Grid.Row="4" Grid.Column="1" Margin="3" 
              FontFamily="{StaticResource theFont}"

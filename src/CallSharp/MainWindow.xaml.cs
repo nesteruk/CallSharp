@@ -49,7 +49,21 @@ namespace CallSharp
     public static readonly DependencyProperty OutputTypeProperty =
         DependencyProperty.Register("OutputType", typeof(Type), typeof(MainWindow), new PropertyMetadata(typeof(string)));
 
-    private object parsedInputValue, parsedOutputValue;
+
+
+    public bool? ScaleWindow
+    {
+      get { return (bool?)GetValue(ScaleWindowProperty); }
+      set { SetValue(ScaleWindowProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for ScaleWindow.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty ScaleWindowProperty =
+        DependencyProperty.Register("ScaleWindow", typeof(bool?), typeof(MainWindow), new PropertyMetadata(false));
+
+
+
+    private object parsedInputValue = string.Empty, parsedOutputValue = string.Empty;
 
     private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -169,7 +183,7 @@ namespace CallSharp
           input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeWithNoArgument(input);
-        if (output.Equals(cookie.ReturnValue))
+        if (output.Equals(cookie?.ReturnValue))
           Candidates.Add("input" + callChain + cookie);
         else
         {
@@ -183,8 +197,12 @@ namespace CallSharp
           input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeStaticWithSingleArgument(input);
-        if (output.Equals(cookie.ReturnValue))
-          Candidates.Add($"{m.DeclaringType?.Name}${cookie}");
+        if (output.Equals(cookie?.ReturnValue))
+          Candidates.Add($"{m.DeclaringType?.Name}{callChain}{cookie}");
+        else
+        {
+          failCookies.Add(cookie);
+        }
       }
 
       if (!Candidates.Any() && depth < 2)
@@ -196,7 +214,7 @@ namespace CallSharp
         {
           // get the cookie for this invocation
           var cookie = m.InvokeWithNoArgument(input);
-
+          
           // pass it on
           FindCandidates(cookie.ReturnValue, output, depth+1, cookie.ToString());
         }
@@ -219,6 +237,11 @@ namespace CallSharp
     private void SetProgress(string s)
     {
       TbInfo.Text = s;
+    }
+
+    private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
+    {
+      ScaleWindow = CbScaleWindow.IsChecked;
     }
   }
 }
