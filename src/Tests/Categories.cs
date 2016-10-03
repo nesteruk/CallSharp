@@ -8,6 +8,6 @@ namespace Tests
 {
   public class Categories
   {
-    public const string LongRunning = "Long-running";
+    public const string LongRunning = "Long running";
   }
 }

@@ -9,9 +9,11 @@ namespace Tests
     private static MemberDatabase mdb = new MemberDatabase();
 
     [Test, Category(Categories.LongRunning)]
-    public void SearchHasSuggestion(string search, string requiredCandidate)
+    [TestCase("foo   ", "foo", "input.TrimEnd()")]
+    [TestCase(" a b c ", "abc", "string.Concat(input.Split())")]
+    public void StringCalls(string input, string output, string requiredCandidate)
     {
-
+      Assert.That(mdb.FindCandidates(input, output, 2), Contains.Item(requiredCandidate));
     }
   }
 }
