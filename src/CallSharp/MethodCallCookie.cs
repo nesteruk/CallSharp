@@ -30,20 +30,31 @@ namespace CallSharp
 
     public override string ToString()
     {
-      return ToString(String.Empty);
+      return "x";
     }
 
-    public string ToString(string inner)
+    /// <summary>
+    /// Renders the function call on <c>subject</c>. The rendering is different depending
+    /// on whether or not the function is static.
+    /// </summary>
+    /// <param name="subject"></param>
+    /// <returns></returns>
+    public string ToString(string subject)
     {
       var sb = new StringBuilder();
 
       // we either called it on a member . or on static X.
       if (MethodCalled.IsStatic)
         sb.Append(MethodCalled.DeclaringType.GetFriendlyName());
+      else
+        sb.Append(subject);
       sb.Append(".");
 
       if (MethodCalled.Name.StartsWith("get_"))
+      {
+        // just a property
         sb.Append(MethodCalled.Name.Substring(4));
+      }
       else
       {
         sb.Append(MethodCalled.Name).Append("(");
@@ -68,7 +79,7 @@ namespace CallSharp
 
         // on the other hand, a static call has NO arguments, so...
         if (MethodCalled.IsStatic)
-          sb.Append($"input{inner}");
+          sb.Append(subject);
 
         sb.Append(")");
       }

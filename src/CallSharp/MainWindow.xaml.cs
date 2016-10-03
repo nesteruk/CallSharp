@@ -174,8 +174,6 @@ namespace CallSharp
       foreach (string c in memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
         Candidates.Add(c);
     }
-    
-    
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)
     {

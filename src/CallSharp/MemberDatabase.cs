@@ -155,7 +155,7 @@ namespace CallSharp
     }
 
     [Pure]
-    public IEnumerable<string> FindCandidates(object input, object output, int depth, string callChain = "")
+    public IEnumerable<string> FindCandidates(object input, object output, int depth, string callChain = "input")
     {
       bool foundSomething = false;
 
@@ -174,13 +174,12 @@ namespace CallSharp
         }
       }
 
-      foreach (var m in FindOneToOneNonStatic(
-          input.GetType(), output.GetType()))
+      foreach (var m in FindOneToOneNonStatic(input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeWithNoArgument(input);
-        if (output.Equals(cookie?.ReturnValue))
+        if (cookie != null && output.Equals(cookie?.ReturnValue))
         {
-          yield return $"input{callChain}{cookie}";
+          yield return cookie.ToString(callChain);
           foundSomething = true;
         }
         else
@@ -190,8 +189,7 @@ namespace CallSharp
       }
 
 
-      foreach (var m in FindOneToOneStatic(
-          input.GetType(), output.GetType()))
+      foreach (var m in FindOneToOneStatic(input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeStaticWithSingleArgument(input);
         if (output.Equals(cookie?.ReturnValue))
@@ -219,9 +217,8 @@ namespace CallSharp
           // pass it on
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            foreach (
-              var c in
-              FindCandidates(cookie.ReturnValue, output, depth + 1, callChain + cookie))
+            foreach (var c in
+              FindCandidates(cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain)))
             {
               yield return c;
               foundSomething = true;
@@ -236,7 +233,7 @@ namespace CallSharp
           var cookie = m.InvokeStaticWithSingleArgument(input);
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            foreach (var c in FindCandidates(cookie.ReturnValue, output, depth + 1, callChain + cookie))
+            foreach (var c in FindCandidates(cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain)))
             {
               yield return c;
               foundSomething = true;
@@ -247,7 +244,7 @@ namespace CallSharp
         // we already have call results for some invocation chains, why not try those?
         foreach (var fc in failCookies.Where(fc => fc != null && !Equals(fc.ReturnValue, input)))
         {
-          foreach (var с in FindCandidates(fc.ReturnValue, output, depth + 1, callChain + fc))
+          foreach (var с in FindCandidates(fc.ReturnValue, output, depth + 1, fc.ToString(callChain)))
           {
             yield return с;
             foundSomething = true;
