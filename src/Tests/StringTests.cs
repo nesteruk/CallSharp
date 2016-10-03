@@ -1,13 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NUnit.Framework;
+using CallSharp;
 
 namespace Tests
 {
-  public class StringTests
+  [TestFixture]
+  public class BasicMatchTests
   {
+    private static MemberDatabase mdb = new MemberDatabase();
 
+    [Test, Category(Categories.LongRunning)]
+    public void SearchHasSuggestion(string search, string requiredCandidate)
+    {
+
+    }
   }
 }

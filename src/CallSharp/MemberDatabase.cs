@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace CallSharp
 {
@@ -149,6 +150,108 @@ namespace CallSharp
             pars[0].ParameterType == inputType)
         {
           yield return method;
+        }
+      }
+    }
+
+    [Pure]
+    public IEnumerable<string> FindCandidates(object input, object output, int depth, string callChain = "")
+    {
+      bool foundSomething = false;
+
+      // contains all calls that didn't yield the right result
+      var failCookies = new List<MethodCallCookie>();
+
+      foreach (
+        var ctor in FindConstructorFor(input.GetType(), output.GetType()))
+      {
+        // construct exactly this type of object
+        object instance = ctor.Invoke(new[] { input });
+        if (instance.Equals(output))
+        {
+          yield return $"new {ctor.ReflectedType.GetFriendlyName()}({callChain})";
+          foundSomething = true;
+        }
+      }
+
+      foreach (var m in FindOneToOneNonStatic(
+          input.GetType(), output.GetType()))
+      {
+        var cookie = m.InvokeWithNoArgument(input);
+        if (output.Equals(cookie?.ReturnValue))
+        {
+          yield return $"input{callChain}{cookie}";
+          foundSomething = true;
+        }
+        else
+        {
+          failCookies.Add(cookie);
+        }
+      }
+
+
+      foreach (var m in FindOneToOneStatic(
+          input.GetType(), output.GetType()))
+      {
+        var cookie = m.InvokeStaticWithSingleArgument(input);
+        if (output.Equals(cookie?.ReturnValue))
+        {
+          if (cookie != null && !Equals(cookie.ReturnValue, input))
+          {
+            yield return cookie.ToString(callChain);
+            foundSomething = true;
+          }
+        }
+        else
+        {
+          failCookies.Add(cookie);
+        }
+      }
+
+      if (!foundSomething && depth < 3)
+      {
+        // if we found nothing of worth, try a chain
+        foreach (var m in FindAnyToOneNonStatic(input.GetType(), output.GetType()))
+        {
+          // get the cookie for this invocation
+          var cookie = m.InvokeWithNoArgument(input);
+
+          // pass it on
+          if (cookie != null && !Equals(cookie.ReturnValue, input))
+          {
+            foreach (
+              var c in
+              FindCandidates(cookie.ReturnValue, output, depth + 1, callChain + cookie))
+            {
+              yield return c;
+              foundSomething = true;
+            }
+          }
+        }
+
+        // could be a static call of some arbitrary type
+        foreach (
+          var m in FindAnyToOneStatic(input.GetType(), output.GetType()))
+        {
+          var cookie = m.InvokeStaticWithSingleArgument(input);
+          if (cookie != null && !Equals(cookie.ReturnValue, input))
+          {
+            foreach (var c in FindCandidates(cookie.ReturnValue, output, depth + 1, callChain + cookie))
+            {
+              yield return c;
+              foundSomething = true;
+            }
+          }
+        }
+
+        // we already have call results for some invocation chains, why not try those?
+        foreach (var fc in failCookies.Where(fc => fc != null && !Equals(fc.ReturnValue, input)))
+        {
+          foreach (var с in FindCandidates(fc.ReturnValue, output, depth + 1, callChain + fc))
+          {
+            yield return с;
+            foundSomething = true;
+          }
         }
       }
     }

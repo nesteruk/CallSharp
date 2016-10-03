@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Documents;
+using JetBrains.Annotations;
 
 namespace CallSharp
 {
@@ -162,100 +163,19 @@ namespace CallSharp
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
-      FindCandidates(parsedInputValue, parsedOutputValue, 0);
-    }
-
-    private void FindCandidates(object input, object output, int depth, string callChain = "")
-    {
-      TbLevel.Text = depth.ToString();
 
       // if input and output are identical, be sure to add it
       if (InputText == OutputText && InputType == OutputType)
       {
         Candidates.Add("input");
-        return; // let's not chain-call this (unless you want to obfuscate)
+        return;
       }
 
-      // contains all calls that didn't yield the right result
-      var failCookies = new List<MethodCallCookie>();
-
-      SetProgress("Looking for converting constructors");
-
-      foreach (
-        var ctor in memberDatabase.FindConstructorFor(input.GetType(), output.GetType()))
-      {
-        // construct exactly this type of object
-        object instance = ctor.Invoke(new[] {input});
-        if (instance.Equals(output))
-          Candidates.Add($"new {ctor.ReflectedType.GetFriendlyName()}(" + callChain + ")");
-      }
-
-      SetProgress("Looking for 1-to-1 member calls.");
-      
-      foreach (var m in memberDatabase.FindOneToOneNonStatic(
-          input.GetType(), output.GetType()))
-      {
-        var cookie = m.InvokeWithNoArgument(input);
-        if (output.Equals(cookie?.ReturnValue))
-          Candidates.Add("input" + callChain + cookie);
-        else
-        {
-          failCookies.Add(cookie);
-        }
-      }
-
-      SetProgress("Looking for 1-to-1 static calls.");
-
-      foreach (var m in memberDatabase.FindOneToOneStatic(
-          input.GetType(), output.GetType()))
-      {
-        var cookie = m.InvokeStaticWithSingleArgument(input);
-        if (output.Equals(cookie?.ReturnValue))
-        {
-          if (cookie != null && !Equals(cookie.ReturnValue, input))
-            Candidates.Add(cookie.ToString(callChain));
-        }
-        else
-        {
-          failCookies.Add(cookie);
-        }
-      }
-
-      if (!Candidates.Any() && depth < 3)
-      {
-        // if we found nothing of worth, try a chain
-        foreach (
-          var m in memberDatabase.FindAnyToOneNonStatic(input.GetType(), output.GetType())
-        )
-        {
-          // get the cookie for this invocation
-          var cookie = m.InvokeWithNoArgument(input);
-          
-          // pass it on
-          if (cookie != null && !Equals(cookie.ReturnValue, input))
-            FindCandidates(cookie.ReturnValue, output, depth+1, callChain+cookie);
-        }
-
-        // could be a static call of some arbitrary type
-        foreach (
-          var m in memberDatabase.FindAnyToOneStatic(input.GetType(), output.GetType()))
-        {
-          var cookie = m.InvokeStaticWithSingleArgument(input);
-          if (cookie != null && !Equals(cookie.ReturnValue, input))
-            FindCandidates(cookie.ReturnValue, output, depth+1, callChain+cookie);
-        }
-
-        // we already have call results for some invocation chains, why not try those?
-        foreach (var fc in failCookies.Where(fc => fc != null && !Equals(fc.ReturnValue, input)))
-        {
-          FindCandidates(fc.ReturnValue, output, depth+1, callChain+fc);
-        }
-      }
-
-      SetProgress(Candidates.Any()
-        ? $"Found {Candidates.Count} call chain{(Candidates.Count % 10 == 1 ? string.Empty : "s")}"
-        : "Could not find any call chains for given input/output");
+      foreach (string c in memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
+        Candidates.Add(c);
     }
+    
+    
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)
     {
@@ -264,11 +184,6 @@ namespace CallSharp
         Clipboard.SetText(LbCandidates.SelectedItem.ToString());
         TbInfo.Text = "Text copied to clipboard.";
       }
-    }
-
-    private void SetProgress(string s)
-    {
-      TbInfo.Text = s;
     }
 
     private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
