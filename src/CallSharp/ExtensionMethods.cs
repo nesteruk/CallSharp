@@ -12,6 +12,11 @@ namespace CallSharp
 {
   public static class ExtensionMethods
   {
+    public static string RemoveMarkers(this string s)
+    {
+      return s.Replace(MagicTextBox.SpaceChar, ' ');
+    }
+
     public static bool AllAreOptional(this ParameterInfo[] ps)
     {
       return ps.All(p => p.IsOptional);

@@ -65,12 +65,12 @@ namespace CallSharp
 
     private object parsedInputValue = string.Empty, parsedOutputValue = string.Empty;
 
-    private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs _)
     {
       var self = (MainWindow) d;
 
-      var parsedValues = ((string) e.NewValue).InferTypes();
-      parsedValues.Add(e.NewValue);
+      var parsedValues = self.InputText.RemoveMarkers().InferTypes();
+      parsedValues.Add(self.InputText.RemoveMarkers());
       if (parsedValues.Any())
       {
         self.parsedInputValue = parsedValues[0];

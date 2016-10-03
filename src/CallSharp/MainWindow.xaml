@@ -33,8 +33,8 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Label HorizontalAlignment="Right">Input:</Label>
-    <TextBox Grid.Row="0" Grid.Column="1" FontFamily="{StaticResource theFont}" Margin="3"
-             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"/>
+    <me:MagicTextBox Grid.Row="0" Grid.Column="1" FontFamily="{StaticResource theFont}" Margin="3"
+             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
 
     <TextBlock Grid.Row="1" Grid.Column="1" 
                FontSize="{StaticResource smallFontSize}"
@@ -52,7 +52,7 @@
     </TextBlock>
 
     <Label Grid.Row="2">Expected output:</Label>
-    <TextBox Grid.Column="1" Grid.Row="2" 
+    <me:MagicTextBox Grid.Column="1" Grid.Row="2" 
              FontFamily="{StaticResource theFont}" Margin="3"
              Text="{Binding Path=OutputText, UpdateSourceTrigger=PropertyChanged}"/>
 

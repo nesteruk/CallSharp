@@ -58,6 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MagicTextBox.cs" />
     <Compile Include="ScaleToWindowSizeBehavior.cs" />
     <Compile Include="Empty.cs" />
     <Compile Include="FragmentationExtensions.cs" />
