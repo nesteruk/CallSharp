@@ -71,7 +71,17 @@ namespace CallSharp
             break;
 
           // todo: literalize argument into code
-          sb.Append(arg);
+          if (arg is string)
+          {
+            sb.AppendFormat("\"{0}\"", arg);
+          } else if (arg is char)
+          {
+            sb.AppendFormat("\'{0}'", arg);
+          }
+          else
+          {
+            sb.Append(arg);
+          }
 
           if (i+1 != Arguments.Length)
             sb.Append(", ");

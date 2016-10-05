@@ -28,13 +28,32 @@ namespace CallSharp
     }
 
     [CanBeNull]
-    public static MethodCallCookie InvokeStaticWithSingleArgument<T>(this MethodInfo mi, T arg)
+    public static MethodCallCookie InvokeStaticWithSingleArgument<T>(this MethodInfo mi,
+      T arg)
     {
       MethodCallCookie result = null;
       try
       {
         var args = new object[] {arg};
         var retval = mi.Invoke(null /*static*/, args);
+        result = new MethodCallCookie(mi, args, retval);
+      }
+      catch
+      {
+        // we cannot reasonably catch this
+      }
+      return result;
+    }
+
+    [CanBeNull]
+    public static MethodCallCookie InvokeWithSingleArgument<T>(this MethodInfo mi, T self,
+      T arg)
+    {
+      MethodCallCookie result = null;
+      try
+      {
+        var args = new object[] {arg};
+        var retval = mi.Invoke(self, args);
         result = new MethodCallCookie(mi, args, retval);
       }
       catch

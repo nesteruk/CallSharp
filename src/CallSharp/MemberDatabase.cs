@@ -8,8 +8,9 @@ namespace CallSharp
 {
   public class MemberDatabase
   {
-    public List<MethodInfo> methods = new List<MethodInfo>();
-    public List<ConstructorInfo> constructors = new List<ConstructorInfo>();
+    private List<MethodInfo> methods = new List<MethodInfo>();
+    private List<ConstructorInfo> constructors = new List<ConstructorInfo>();
+    private FragmentationEngine fragEngine = new FragmentationEngine();
 
     public MemberDatabase()
     {
@@ -124,6 +125,26 @@ namespace CallSharp
     }
 
     /// <summary>
+    /// Locate any non-static method of <c>inputType</c> that takes a single parameter or
+    /// a <c>params[]</c>.
+    /// </summary>
+    /// <param name="inputType"></param>
+    /// <param name="outputType"></param>
+    /// <returns></returns>
+    public IEnumerable<MethodInfo> FindOneToTwoNonStatic(Type inputType, Type outputType)
+    {
+      foreach (var method in methods.Where(m =>
+        !m.IsStatic
+        && m.DeclaringType == inputType
+        && m.ReturnType.IsConvertibleTo(outputType)))
+      {
+        var pars = method.GetParameters();
+        if (pars.Length == 1)
+          yield return method;
+      }
+    }
+
+    /// <summary>
     /// Locates all static methods of any type that is in <see cref="TypeDatabase.CoreTypes"/>
     /// that takes an argument of <c>inputType</c> and returns a value of <c>outputType</c>.
     /// </summary>
@@ -206,6 +227,28 @@ namespace CallSharp
         }
       }
 
+      foreach (var m in FindOneToTwoNonStatic(input.GetType(), output.GetType()))
+      {
+        // generate a set of values to invoke on
+        foreach (var arg in fragEngine.Frag(input, m.GetParameters()[0].ParameterType))
+        {
+          var cookie = m.InvokeWithSingleArgument(input, arg);
+          if (output.Equals(cookie?.ReturnValue))
+          {
+            if (cookie != null && !Equals(cookie.ReturnValue, input))
+            {
+              yield return cookie.ToString(callChain);
+              foundSomething = true;
+            }
+          }
+          else
+          {
+            failCookies.Add(cookie);
+          }
+        }
+      }
+
+      // assuming we haven't found things and not in too deep
       if (!foundSomething && depth < 3)
       {
         // if we found nothing of worth, try a chain
