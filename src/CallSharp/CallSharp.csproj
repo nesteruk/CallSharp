@@ -24,13 +24,13 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>https://raw.github.com/nesteruk/CallSharp/tree/master/distrib/</InstallUrl>
-    <UpdateUrl>https://raw.github.com/nesteruk/CallSharp/tree/master/distrib/</UpdateUrl>
+    <InstallUrl>https://raw.githubusercontent.com/nesteruk/CallSharp/master/distrib/</InstallUrl>
+    <UpdateUrl>https://raw.githubusercontent.com/nesteruk/CallSharp/master/distrib/</UpdateUrl>
     <SupportUrl>https://github.com/nesteruk/CallSharp</SupportUrl>
     <ProductName>CallSharp</ProductName>
     <PublisherName>ActiveMesa</PublisherName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>0.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
