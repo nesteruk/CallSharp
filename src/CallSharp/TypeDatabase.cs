@@ -11,7 +11,7 @@ namespace CallSharp
       typeof(int),
       typeof(long),
       typeof(short),
-      typeof(sbyte),
+      typeof(sbyte)
     };
 
     private static readonly HashSet<Type> unsignedIntegralTypes = new HashSet<Type>
@@ -19,7 +19,7 @@ namespace CallSharp
       typeof(uint),
       typeof(ulong),
       typeof(ushort),
-      typeof(byte),
+      typeof(byte)
     };
 
     public static IEnumerable<Type> integralTypes =>
@@ -29,13 +29,13 @@ namespace CallSharp
     {
       typeof(float),
       typeof(double),
-      typeof(decimal),
+      typeof(decimal)
     };
 
     private static readonly HashSet<Type> dateTimeTypes = new HashSet<Type>
     {
       typeof(DateTime),
-      typeof(TimeSpan),
+      typeof(TimeSpan)
     };
 
     // todo: simply search for those types which have Parse()
@@ -43,6 +43,7 @@ namespace CallSharp
       .Prepend(typeof(bool))
       .Concat(floatingPointTypes)
       .Concat(dateTimeTypes)
+      .Append(typeof(char))
       .Append(typeof(string));
 
     public static IEnumerable<Type> CoreTypes => ParseableTypes;

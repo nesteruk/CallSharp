@@ -23,7 +23,7 @@ namespace CallSharp
     /// <returns>The index of the entry if it was found in the sequence; otherwise, -1.</returns>
     public static int IndexOf<TSource>(this IEnumerable<TSource> source, TSource item)
     {
-      return IndexOf<TSource>(source, item, null);
+      return IndexOf(source, item, null);
     }
 
     // This provides a useful extension-like method to find the index of and item from IEnumerable<T>

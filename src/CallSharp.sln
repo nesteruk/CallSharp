@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CallSharp", "CallSharp\CallSharp.csproj", "{CC273AEA-10C3-4AA6-A8BF-A2437D6AB716}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C12A3423-CFB5-4540-95C8-E5833A911C98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CC273AEA-10C3-4AA6-A8BF-A2437D6AB716}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC273AEA-10C3-4AA6-A8BF-A2437D6AB716}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC273AEA-10C3-4AA6-A8BF-A2437D6AB716}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C12A3423-CFB5-4540-95C8-E5833A911C98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C12A3423-CFB5-4540-95C8-E5833A911C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C12A3423-CFB5-4540-95C8-E5833A911C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C12A3423-CFB5-4540-95C8-E5833A911C98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

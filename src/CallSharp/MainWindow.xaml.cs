@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Documents;
+using JetBrains.Annotations;
 
 namespace CallSharp
 {
-  /// <summary>
-  /// Interaction logic for MainWindow.xaml
-  /// </summary>
   public partial class MainWindow : Window
   {
     private MemberDatabase memberDatabase = new MemberDatabase();
@@ -50,13 +50,28 @@ namespace CallSharp
     public static readonly DependencyProperty OutputTypeProperty =
         DependencyProperty.Register("OutputType", typeof(Type), typeof(MainWindow), new PropertyMetadata(typeof(string)));
 
-    private object parsedInputValue, parsedOutputValue;
 
-    private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+
+    public bool? ScaleWindow
+    {
+      get { return (bool?)GetValue(ScaleWindowProperty); }
+      set { SetValue(ScaleWindowProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for ScaleWindow.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty ScaleWindowProperty =
+        DependencyProperty.Register("ScaleWindow", typeof(bool?), typeof(MainWindow), new PropertyMetadata(false));
+
+
+
+    private object parsedInputValue = string.Empty, parsedOutputValue = string.Empty;
+
+    private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs _)
     {
       var self = (MainWindow) d;
 
-      var parsedValues = ((string) e.NewValue).InferTypes();
+      var parsedValues = self.InputText.RemoveMarkers().InferTypes();
+      parsedValues.Add(self.InputText.RemoveMarkers());
       if (parsedValues.Any())
       {
         self.parsedInputValue = parsedValues[0];
@@ -105,10 +120,38 @@ namespace CallSharp
     {
       var self = (MainWindow) d;
       var parsedValues = ((string)e.NewValue).InferTypes();
+      parsedValues.Add(e.NewValue);
       if (parsedValues.Any())
       {
         self.parsedOutputValue = parsedValues[0];
         self.OutputType = self.parsedOutputValue.GetType();
+
+        self.AlternateOutputValues.Inlines.Clear();
+        foreach (var i in parsedValues)
+        {
+          if (self.OutputType != i.GetType())
+          {
+            Hyperlink h = new Hyperlink();
+            h.Inlines.Add(i.GetType().GetFriendlyName());
+            h.Tag = i;
+            h.Click += (sender, args) =>
+            {
+              var me = (Hyperlink)sender;
+              // cache the current type
+              Type currentType = self.InputType;
+              // set the new type
+              self.OutputType = me.Tag.GetType();
+              self.parsedOutputValue = me.Tag;
+              // restore my type and name
+              me.Inlines.Clear();
+              me.Inlines.Add(currentType.GetFriendlyName());
+              me.Tag = currentType;
+            };
+            Span s = new Span(h);
+            s.Inlines.Add(" ");
+            self.AlternateOutputValues.Inlines.Add(s);
+          }
+        }
       }
     }
 
@@ -122,39 +165,14 @@ namespace CallSharp
       Candidates.Clear();
 
       // if input and output are identical, be sure to add it
-      if (InputText == OutputText)
+      if (InputText == OutputText && InputType == OutputType)
+      {
         Candidates.Add("input");
-
-      var input = InputText.InferTypes().FirstOrDefault() ?? InputText;
-      var output = OutputText.InferTypes().FirstOrDefault() ?? OutputText;
-
-      foreach (
-        var m in memberDatabase.FindOneToOneNonStatic(
-          input.GetType(), output.GetType()))
-      {
-        object actualOutput = m.InvokeWithNoArgument(input);
-        if (output.Equals(actualOutput))
-          Candidates.Add("input." + m.Name + "()");
+        return;
       }
 
-      foreach (
-        var m in memberDatabase.FindOneToOneStatic(
-          input.GetType(), output.GetType()))
-      {
-        var actualOutput = m.InvokeStaticWithSingleArgument(input);
-        if (output.Equals(actualOutput))
-          Candidates.Add($"{m.DeclaringType?.Name}.{m.Name}(input)");
-      }
-
-      foreach (
-        var p in
-        memberDatabase.FindOneToOnePropertyGet(input.GetType(),
-          output.GetType()))
-      {
-        var actualOutput = p.GetMethod.Invoke(input, noArgs);
-        if (output.Equals(actualOutput))
-          Candidates.Add("input." + p.Name);
-      }
+      foreach (string c in memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
+        Candidates.Add(c);
     }
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)
@@ -164,6 +182,11 @@ namespace CallSharp
         Clipboard.SetText(LbCandidates.SelectedItem.ToString());
         TbInfo.Text = "Text copied to clipboard.";
       }
+    }
+
+    private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
+    {
+      ScaleWindow = CbScaleWindow.IsChecked;
     }
   }
 }
