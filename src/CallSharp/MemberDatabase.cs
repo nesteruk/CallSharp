@@ -9,9 +9,9 @@ namespace CallSharp
 {
   public class MemberDatabase
   {
-    private List<MethodInfo> methods = new List<MethodInfo>();
-    private List<ConstructorInfo> constructors = new List<ConstructorInfo>();
-    private FragmentationEngine fragEngine = new FragmentationEngine();
+    private readonly List<MethodInfo> methods = new List<MethodInfo>();
+    private readonly List<ConstructorInfo> constructors = new List<ConstructorInfo>();
+    private readonly FragmentationEngine fragEngine = new FragmentationEngine();
 
     public MemberDatabase()
     {

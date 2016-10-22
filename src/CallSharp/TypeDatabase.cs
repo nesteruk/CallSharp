@@ -6,6 +6,7 @@ namespace CallSharp
 {
   static class TypeDatabase
   {
+    
     private static readonly HashSet<Type> signedIntegralTypes = new HashSet<Type>
     {
       typeof(int),
@@ -22,8 +23,7 @@ namespace CallSharp
       typeof(byte)
     };
 
-    public static IEnumerable<Type> integralTypes =>
-      signedIntegralTypes.Concat(unsignedIntegralTypes);
+    public static HashSet<Type> integralTypes = new HashSet<Type>(signedIntegralTypes.Concat(unsignedIntegralTypes));
 
     private static readonly HashSet<Type> floatingPointTypes = new HashSet<Type>
     {
@@ -39,22 +39,22 @@ namespace CallSharp
     };
 
     // todo: simply search for those types which have Parse()
-    public static IEnumerable<Type> ParseableTypes => integralTypes
+    public static HashSet<Type> ParseableTypes = new HashSet<Type>(integralTypes
       .Prepend(typeof(bool))
       .Concat(floatingPointTypes)
       .Concat(dateTimeTypes)
       .Append(typeof(char))
-      .Append(typeof(string));
+      .Append(typeof(string)));
 
-    public static IEnumerable<Type> SequenceTypes = new HashSet<Type>
+    public static HashSet<Type> SequenceTypes = new HashSet<Type>
     {
       typeof(Array),
       typeof(List<>)
     };
 
-    public static IEnumerable<Type> CoreTypes => 
+    public static HashSet<Type> CoreTypes = new HashSet<Type>( 
       ParseableTypes
       .Append(typeof(Enumerable))
-      .Append(typeof(Math));
+      .Append(typeof(Math)));
   }
 }

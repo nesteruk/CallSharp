@@ -64,8 +64,6 @@ namespace CallSharp
     public static readonly DependencyProperty ScaleWindowProperty =
         DependencyProperty.Register("ScaleWindow", typeof(bool?), typeof(MainWindow), new PropertyMetadata(false));
 
-
-
     private object parsedInputValue = string.Empty, parsedOutputValue = string.Empty;
 
     private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs _)
@@ -161,8 +159,6 @@ namespace CallSharp
     {
       InitializeComponent();
     }
-
-    CancellationTokenSource cts = new CancellationTokenSource();
 
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
