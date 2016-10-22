@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using JetBrains.Annotations;
@@ -160,6 +162,8 @@ namespace CallSharp
       InitializeComponent();
     }
 
+    CancellationTokenSource cts = new CancellationTokenSource();
+
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
@@ -171,8 +175,12 @@ namespace CallSharp
         return;
       }
 
-      foreach (string c in memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
-        Candidates.Add(c);
+      Task.Factory.StartNew(() =>
+        memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
+        .ContinueWith(task =>
+        {
+          foreach (var x in task.Result) Candidates.Add(x);
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)

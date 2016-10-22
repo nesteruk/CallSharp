@@ -46,6 +46,15 @@ namespace CallSharp
       .Append(typeof(char))
       .Append(typeof(string));
 
-    public static IEnumerable<Type> CoreTypes => ParseableTypes;
+    public static IEnumerable<Type> SequenceTypes = new HashSet<Type>
+    {
+      typeof(Array),
+      typeof(List<>)
+    };
+
+    public static IEnumerable<Type> CoreTypes => 
+      ParseableTypes
+      .Append(typeof(Enumerable))
+      .Append(typeof(Math));
   }
 }
