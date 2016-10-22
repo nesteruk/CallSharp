@@ -58,7 +58,7 @@
 
     <TextBlock Grid.Row="3" Grid.Column="1" 
                FontSize="{StaticResource smallFontSize}"
-               Margin="2">
+               Margin="2" TextWrapping="Wrap">
       <Span>Output treated as: </Span>
       <Run FontWeight="Bold" Text="{Binding OutputType, Converter={StaticResource typeToString}}"/>
       <Span x:Name="AlternateOutputValues"/>

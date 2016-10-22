@@ -11,9 +11,16 @@ namespace Tests
     [Test, Category(Categories.LongRunning)]
     [TestCase("foo   ", "foo", "input.TrimEnd()")]
     [TestCase(" a b c ", "abc", "string.Concat(input.Split())")]
+    [TestCase("xxyy", "xx", "input.TrimEnd('y')")]
     public void StringCalls(string input, string output, string requiredCandidate)
     {
       Assert.That(mdb.FindCandidates(input, output, 2), Contains.Item(requiredCandidate));
+    }
+
+    [Test]
+    public void FloatToIntImplicitTest()
+    {
+      Assert.That(mdb.FindCandidates(1.0f, 1, 2), Contains.Item("input"));
     }
   }
 }

@@ -20,14 +20,32 @@ namespace CallSharp
     public IEnumerable<object> Frag(object source, Type partType)
     {
       var s = source as string;
-      if (s != null && partType == typeof(string))
+      if (s != null)
       {
-        foreach (var part in FragToString(s))
-          yield return part;
-        foreach (var part in FragToInt(s))
-          yield return part;
-      }
+        if (string.IsNullOrEmpty(s))
+          yield break; // we have nothing to do here
 
+        if (partType == typeof(string))
+        {
+          foreach (var part in FragToString(s))
+            yield return part;
+          foreach (var part in FragToInt(s))
+            yield return part;
+        }
+        else if (partType == typeof(char))
+        {
+          foreach (var c in s.ToCharArray())
+            yield return c;
+        }
+        else if (partType == typeof(char[]))
+        {
+          // every combination of characters in a string
+          HashSet<char> allChars = new HashSet<char>(s.ToCharArray());
+          for (int i = 1; i < allChars.Count; ++i)
+            foreach (var x in PermuteUtils.Permute(allChars, i))
+              yield return x.ToArray();
+        }
+      }
 
     }
 
@@ -36,6 +54,11 @@ namespace CallSharp
       return Enumerable.Range(0, text.Length);
     }
 
+    /// <summary>
+    /// Every substring in a string.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     private IEnumerable<string> FragToString(string text)
     {
       return Enumerable.Range(0, text.Length)

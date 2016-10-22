@@ -182,6 +182,26 @@ namespace CallSharp
     {
       Trace.WriteLine(callChain);
 
+      // if inputs are completely identical, we have no further work to do
+      if (input.Equals(output))
+      {
+        yield return callChain;
+        yield break;
+      }
+
+      // here we try to brute-force conversion of input to output
+      // if it succeeds, we break as before
+      object newValue = null;
+      try
+      {
+        newValue = Convert.ChangeType(output, input.GetType());
+      } catch (Exception) { }
+      if (input.Equals(newValue))
+      {
+        yield return callChain;
+        yield break;
+      }
+
       bool foundSomething = false;
 
       // contains all calls that didn't yield the right result

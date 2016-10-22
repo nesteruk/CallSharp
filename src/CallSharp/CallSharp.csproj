@@ -93,6 +93,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="PermuteUtils.cs" />
     <Compile Include="Cuda.cs" />
     <Compile Include="MagicTextBox.cs" />
     <Compile Include="ScaleToWindowSizeBehavior.cs" />

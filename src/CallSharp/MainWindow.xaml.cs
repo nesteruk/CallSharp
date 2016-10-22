@@ -163,14 +163,7 @@ namespace CallSharp
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
-
-      // if input and output are identical, be sure to add it
-      if (InputText == OutputText && InputType == OutputType)
-      {
-        Candidates.Add("input");
-        return;
-      }
-
+      
       Task.Factory.StartNew(() =>
         memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
         .ContinueWith(task =>
