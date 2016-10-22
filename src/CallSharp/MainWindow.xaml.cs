@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -158,6 +159,8 @@ namespace CallSharp
     public MainWindow()
     {
       InitializeComponent();
+
+      Title += " v" +Assembly.GetEntryAssembly().GetName().Version.ToString(3);
     }
 
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
