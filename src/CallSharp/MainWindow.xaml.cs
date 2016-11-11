@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using JetBrains.Annotations;
@@ -61,8 +64,6 @@ namespace CallSharp
     // Using a DependencyProperty as the backing store for ScaleWindow.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ScaleWindowProperty =
         DependencyProperty.Register("ScaleWindow", typeof(bool?), typeof(MainWindow), new PropertyMetadata(false));
-
-
 
     private object parsedInputValue = string.Empty, parsedOutputValue = string.Empty;
 
@@ -158,21 +159,20 @@ namespace CallSharp
     public MainWindow()
     {
       InitializeComponent();
+
+      Title += " v" +Assembly.GetEntryAssembly().GetName().Version.ToString(3);
     }
 
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
-
-      // if input and output are identical, be sure to add it
-      if (InputText == OutputText && InputType == OutputType)
-      {
-        Candidates.Add("input");
-        return;
-      }
-
-      foreach (string c in memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
-        Candidates.Add(c);
+      
+      Task.Factory.StartNew(() =>
+        memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
+        .ContinueWith(task =>
+        {
+          foreach (var x in task.Result) Candidates.Add(x);
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)

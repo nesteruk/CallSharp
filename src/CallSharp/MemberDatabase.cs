@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -8,9 +9,9 @@ namespace CallSharp
 {
   public class MemberDatabase
   {
-    private List<MethodInfo> methods = new List<MethodInfo>();
-    private List<ConstructorInfo> constructors = new List<ConstructorInfo>();
-    private FragmentationEngine fragEngine = new FragmentationEngine();
+    private readonly List<MethodInfo> methods = new List<MethodInfo>();
+    private readonly List<ConstructorInfo> constructors = new List<ConstructorInfo>();
+    private readonly FragmentationEngine fragEngine = new FragmentationEngine();
 
     public MemberDatabase()
     {
@@ -20,6 +21,7 @@ namespace CallSharp
         // we only care about publicly visible types, right?
         foreach (var type in ass.ExportedTypes)
         {
+          Trace.WriteLine(type.FullName + " from " + ass.FullName);
           methods.AddRange(type.GetMethods());
 
           // we index single-argument constructors only
@@ -44,7 +46,7 @@ namespace CallSharp
     /// </remarks>
     public IEnumerable<MethodInfo> FindAnyToOneNonStatic(Type inputType, Type ignoreThisOutputType)
     {
-      foreach (var method in methods.Where(m =>
+      foreach (var method in methods.AsParallel().Where(m =>
         m.DeclaringType == inputType &&
         m.ReturnType != ignoreThisOutputType &&
         m.ReturnType != typeof(void)
@@ -108,7 +110,7 @@ namespace CallSharp
     /// <returns></returns>
     public IEnumerable<MethodInfo> FindOneToOneNonStatic(Type inputType, Type outputType)
     {
-      foreach (var method in methods.Where(m =>
+      foreach (var method in methods.AsParallel().Where(m =>
         m.DeclaringType == inputType &&
         m.ReturnType.IsConvertibleTo(outputType)))
       {
@@ -133,7 +135,7 @@ namespace CallSharp
     /// <returns></returns>
     public IEnumerable<MethodInfo> FindOneToTwoNonStatic(Type inputType, Type outputType)
     {
-      foreach (var method in methods.Where(m =>
+      foreach (var method in methods.AsParallel().Where(m =>
         !m.IsStatic
         && m.DeclaringType == inputType
         && m.ReturnType.IsConvertibleTo(outputType)))
@@ -155,7 +157,7 @@ namespace CallSharp
     {
       // search in ALL core types types :)
       // warning: allowing other types is NOT SAFE because you might call File.Delete or something
-      foreach (var method in methods.Where(m =>
+      foreach (var method in methods.AsParallel().Where(m =>
         m.ReturnType.IsConvertibleTo(outputType)
         && TypeDatabase.CoreTypes.Contains(m.DeclaringType) // a core type
         && !m.Name.Equals("Parse") // it throws 
@@ -178,6 +180,28 @@ namespace CallSharp
     [Pure]
     public IEnumerable<string> FindCandidates(object input, object output, int depth, string callChain = "input")
     {
+      Trace.WriteLine(callChain);
+
+      // if inputs are completely identical, we have no further work to do
+      if (input.Equals(output))
+      {
+        yield return callChain;
+        yield break;
+      }
+
+      // here we try to brute-force conversion of input to output
+      // if it succeeds, we break as before
+      object newValue = null;
+      try
+      {
+        newValue = Convert.ChangeType(output, input.GetType());
+      } catch (Exception) { }
+      if (input.Equals(newValue))
+      {
+        yield return callChain;
+        yield break;
+      }
+
       bool foundSomething = false;
 
       // contains all calls that didn't yield the right result

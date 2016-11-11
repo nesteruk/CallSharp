@@ -128,7 +128,7 @@ namespace CallSharp
     public static IEnumerable<T> Append<T>(this IEnumerable<T> source, T element)
     {
       if (source == null)
-        throw new ArgumentNullException("source");
+        throw new ArgumentNullException(nameof(source));
       return concatIterator(element, source, false);
     }
 
@@ -139,7 +139,7 @@ namespace CallSharp
     public static IEnumerable<T> Prepend<T>(this IEnumerable<T> tail, T head)
     {
       if (tail == null)
-        throw new ArgumentNullException("tail");
+        throw new ArgumentNullException(nameof(tail));
       return concatIterator(head, tail, true);
     }
 
@@ -165,36 +165,39 @@ namespace CallSharp
       }
     }
 
-    static Dictionary<Type, List<Type>> conversionMap = new Dictionary<Type, List<Type>>
+    static Dictionary<Type, HashSet<Type>> conversionMap = new Dictionary<Type, HashSet<Type>>
     {
-        { typeof(decimal), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
-        { typeof(double), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
-        { typeof(float), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
-        { typeof(ulong), new List<Type> { typeof(byte), typeof(ushort), typeof(uint), typeof(char) } },
-        { typeof(long), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(char) } },
-        { typeof(uint), new List<Type> { typeof(byte), typeof(ushort), typeof(char) } },
-        { typeof(int), new List<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(char) } },
-        { typeof(ushort), new List<Type> { typeof(byte), typeof(char) } },
-        { typeof(short), new List<Type> { typeof(byte) } }
+        { typeof(decimal), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
+        { typeof(double), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
+        { typeof(float), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
+        { typeof(ulong), new HashSet<Type> { typeof(byte), typeof(ushort), typeof(uint), typeof(char) } },
+        { typeof(long), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(char) } },
+        { typeof(uint), new HashSet<Type> { typeof(byte), typeof(ushort), typeof(char) } },
+        { typeof(int), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(char) } },
+        { typeof(ushort), new HashSet<Type> { typeof(byte), typeof(char) } },
+        { typeof(short), new HashSet<Type> { typeof(byte) } }
     };
 
     public static bool IsConvertibleTo(this Type from, Type to)
     {
-      if (from == to || to.IsAssignableFrom(from))
-      {
-        return true;
-      }
-      if (conversionMap.ContainsKey(to) && conversionMap[to].Contains(from))
-      {
-        return true;
-      }
-      bool castable = from.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                      .Any(
-                          m => m.ReturnType == to &&
-                          (m.Name == "op_Implicit" ||
-                          m.Name == "op_Explicit")
-                      );
-      return castable;
+      return from == to || to.IsAssignableFrom(from) ||
+             (conversionMap.ContainsKey(to) && conversionMap[to].Contains(from));
+
+      //if (from == to || to.IsAssignableFrom(from))
+      //{
+      //  return true;
+      //}
+      //if (conversionMap.ContainsKey(to) && conversionMap[to].Contains(from))
+      //{
+      //  return true;
+      //}
+      //bool castable = from.GetMethods(BindingFlags.Public | BindingFlags.Static)
+      //                .Any(
+      //                    m => m.ReturnType == to &&
+      //                    (m.Name == "op_Implicit" ||
+      //                    m.Name == "op_Explicit")
+      //                );
+      //return castable;
     }
   }
 }

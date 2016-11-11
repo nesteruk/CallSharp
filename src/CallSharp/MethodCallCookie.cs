@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -42,6 +43,7 @@ namespace CallSharp
     public string ToString(string subject)
     {
       var sb = new StringBuilder();
+      var methodParams = MethodCalled.GetParameters();
 
       // we either called it on a member . or on static X.
       if (MethodCalled.IsStatic)
@@ -63,6 +65,7 @@ namespace CallSharp
         for (int i = start; i < Arguments.Length; i++)
         {
           var arg = Arguments[i];
+          bool isParams = methodParams[i].IsParams();
           
           // caveat: calling a params[] really passes in a single
           // 0-sized array :( need special handling
@@ -74,9 +77,16 @@ namespace CallSharp
           if (arg is string)
           {
             sb.AppendFormat("\"{0}\"", arg);
-          } else if (arg is char)
+          }
+          else if (arg is char)
           {
             sb.AppendFormat("\'{0}'", arg);
+          }
+          else if (arg is char[])
+          {
+            if (!isParams) sb.Append("new char[]{");
+            sb.Append(string.Join(",", ((char[]) arg).Select(c => "'" + c + "'")));
+            if (!isParams) sb.Append("}");
           }
           else
           {
