@@ -7,13 +7,14 @@ using JetBrains.Annotations;
 
 namespace CallSharp
 {
-  public class MemberDatabase
+  public class DynamicMemberDatabase : IMemberDatabase
   {
-    private readonly List<MethodInfo> methods = new List<MethodInfo>();
-    private readonly List<ConstructorInfo> constructors = new List<ConstructorInfo>();
-    private readonly FragmentationEngine fragEngine = new FragmentationEngine();
+    private readonly HashSet<MethodInfo> staticMethods = new HashSet<MethodInfo>();
+    private readonly HashSet<MethodInfo> instanceMethods = new HashSet<MethodInfo>();
+    private readonly HashSet<ConstructorInfo> constructors = new HashSet<ConstructorInfo>();
+    private readonly IFragmentationEngine fragEngine = new FragmentationEngine();
 
-    public MemberDatabase()
+    public DynamicMemberDatabase()
     {
       // get each loaded assembly
       foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
@@ -22,16 +23,20 @@ namespace CallSharp
         foreach (var type in ass.ExportedTypes)
         {
           Trace.WriteLine(type.FullName + " from " + ass.FullName);
-          methods.AddRange(type.GetMethods());
+          var methods = type.GetMethods();
+          foreach (var m in methods)
+            m.AddTo(m.IsStatic ? staticMethods : instanceMethods);
 
           // we index single-argument constructors only
-          constructors.AddRange(type.GetConstructors().Where(c =>
+          type.GetConstructors().Where(c =>
             !c.ContainsGenericParameters // nor this
             && c.GetParameters().Length == 1 // the argument type is unconstrained
-          ));
+          ).AddTo(constructors);
         }
       }
     }
+
+    
 
     /// <summary>
     /// Locates any non-static method of <code>inputType</code> that yields a
@@ -44,9 +49,9 @@ namespace CallSharp
     /// we search explicitly for f:A->B and already have cookies from those searches. We want
     /// to avoid performing the search again, so we search for f:A->Z where Z != B.
     /// </remarks>
-    public IEnumerable<MethodInfo> FindAnyToOneNonStatic(Type inputType, Type ignoreThisOutputType)
+    public IEnumerable<MethodInfo> FindAnyToOneInstance(Type inputType, Type ignoreThisOutputType)
     {
-      foreach (var method in methods.AsParallel().Where(m =>
+      foreach (var method in instanceMethods.AsParallel().Where(m =>
         m.DeclaringType == inputType &&
         m.ReturnType != ignoreThisOutputType &&
         m.ReturnType != typeof(void)
@@ -75,7 +80,7 @@ namespace CallSharp
     public IEnumerable<MethodInfo> FindAnyToOneStatic(Type inputType,
       Type ignoreThisOutputType)
     {
-      foreach (var method in methods.Where(m =>
+      foreach (var method in staticMethods.Where(m =>
         m.DeclaringType != null 
         && (
           m.DeclaringType.IsIn(TypeDatabase.CoreTypes)
@@ -108,9 +113,9 @@ namespace CallSharp
     /// <param name="inputType"></param>
     /// <param name="outputType"></param>
     /// <returns></returns>
-    public IEnumerable<MethodInfo> FindOneToOneNonStatic(Type inputType, Type outputType)
+    public IEnumerable<MethodInfo> FindOneToOneInstance(Type inputType, Type outputType)
     {
-      foreach (var method in methods.AsParallel().Where(m =>
+      foreach (var method in instanceMethods.AsParallel().Where(m =>
         m.DeclaringType == inputType &&
         m.ReturnType.IsConvertibleTo(outputType)))
       {
@@ -126,6 +131,28 @@ namespace CallSharp
       }
     }
 
+    private IEnumerable<MethodInfo> FindOneToXInstance(Type inputType, Type outputType,
+      int numberOfNonOptionalArguments)
+    {
+      foreach (var method in instanceMethods.AsParallel().Where(m =>
+        !m.IsStatic
+        && m.DeclaringType == inputType
+        && m.ReturnType.IsConvertibleTo(outputType)))
+      {
+        var pars = method.GetParameters();
+        if (pars.Count(p => !p.ProvisionOfThisArgumentIsOptional()) ==
+            numberOfNonOptionalArguments)
+        {
+          yield return method;
+        }
+      }
+    }
+
+    public IEnumerable<MethodInfo> FindOneToThreeInstance(Type inputType, Type outputType)
+    {
+      return FindOneToXInstance(inputType, outputType, 2);
+    }
+
     /// <summary>
     /// Locate any non-static method of <c>inputType</c> that takes a single parameter or
     /// a <c>params[]</c>.
@@ -133,17 +160,9 @@ namespace CallSharp
     /// <param name="inputType"></param>
     /// <param name="outputType"></param>
     /// <returns></returns>
-    public IEnumerable<MethodInfo> FindOneToTwoNonStatic(Type inputType, Type outputType)
+    public IEnumerable<MethodInfo> FindOneToTwoInstance(Type inputType, Type outputType)
     {
-      foreach (var method in methods.AsParallel().Where(m =>
-        !m.IsStatic
-        && m.DeclaringType == inputType
-        && m.ReturnType.IsConvertibleTo(outputType)))
-      {
-        var pars = method.GetParameters();
-        if (pars.Length == 1)
-          yield return method;
-      }
+      return FindOneToXInstance(inputType, outputType, 1);
     }
 
     /// <summary>
@@ -157,7 +176,7 @@ namespace CallSharp
     {
       // search in ALL core types types :)
       // warning: allowing other types is NOT SAFE because you might call File.Delete or something
-      foreach (var method in methods.AsParallel().Where(m =>
+      foreach (var method in staticMethods.AsParallel().Where(m =>
         m.ReturnType.IsConvertibleTo(outputType)
         && TypeDatabase.CoreTypes.Contains(m.DeclaringType) // a core type
         && !m.Name.Equals("Parse") // it throws 
@@ -166,16 +185,25 @@ namespace CallSharp
         if (method.Name.Contains("Delete"))
           throw new Exception("Just in case!");
 
+        if (method.ToString().Contains("System.Math") && method.Name.Contains("Sqrt"))
+        {
+          Debugger.Break();
+        }
+
         var pars = method.GetParameters();
 
         if (method.IsStatic &&
             pars.Length == 1 &&
-            pars[0].ParameterType == inputType)
+            inputType.IsConvertibleTo(pars[0].ParameterType)
+            //pars[0].ParameterType == inputType
+           )
         {
           yield return method;
         }
       }
     }
+
+    
 
     [Pure]
     public IEnumerable<string> FindCandidates(object input, object output, int depth, string callChain = "input")
@@ -219,7 +247,7 @@ namespace CallSharp
         }
       }
 
-      foreach (var m in FindOneToOneNonStatic(input.GetType(), output.GetType()))
+      foreach (var m in FindOneToOneInstance(input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeWithNoArgument(input);
         if (cookie != null && output.Equals(cookie?.ReturnValue))
@@ -251,32 +279,62 @@ namespace CallSharp
         }
       }
 
-      foreach (var m in FindOneToTwoNonStatic(input.GetType(), output.GetType()))
+      // look for single-argument fragmentation
+      if (!foundSomething)
       {
-        // generate a set of values to invoke on
-        foreach (var arg in fragEngine.Frag(input, m.GetParameters()[0].ParameterType))
+        foreach (var m in FindOneToTwoInstance(input.GetType(), output.GetType()))
         {
-          var cookie = m.InvokeWithSingleArgument(input, arg);
-          if (output.Equals(cookie?.ReturnValue))
+          // generate a set of values to invoke on
+          foreach (var arg in fragEngine.Frag(input, m.GetParameters()[0].ParameterType))
           {
-            if (cookie != null && !Equals(cookie.ReturnValue, input))
+            var cookie = m.InvokeWithArguments(input, arg);
+            if (output.Equals(cookie?.ReturnValue))
             {
-              yield return cookie.ToString(callChain);
-              foundSomething = true;
+              if (cookie != null && !Equals(cookie.ReturnValue, input))
+              {
+                yield return cookie.ToString(callChain);
+                foundSomething = true;
+              }
+            }
+            else
+            {
+              failCookies.Add(cookie);
             }
           }
-          else
+        }
+      }
+
+      // look for two-argument fragmentation; this is costly
+      if (!foundSomething)
+      {
+        foreach (var m in FindOneToThreeInstance(input.GetType(), output.GetType()))
+        {
+          // generate a set of first and second arguments
+          foreach (var arg1 in fragEngine.Frag(input, m.GetParameters()[0].ParameterType))
+          foreach (var arg2 in fragEngine.Frag(input, m.GetParameters()[1].ParameterType))
           {
-            failCookies.Add(cookie);
+            var cookie = m.InvokeWithArguments(input, arg1, arg2);
+            if (output.Equals(cookie?.ReturnValue))
+            {
+              if (cookie != null && !Equals(cookie.ReturnValue, input))
+              {
+                yield return cookie.ToString(callChain);
+                //foundSomething = true;
+              }
+            }
+            else
+            {
+              failCookies.Add(cookie);
+            }
           }
         }
       }
 
       // assuming we haven't found things and not in too deep
-      if (!foundSomething && depth < 3)
+      if (!foundSomething && depth < 2)
       {
         // if we found nothing of worth, try a chain
-        foreach (var m in FindAnyToOneNonStatic(input.GetType(), output.GetType()))
+        foreach (var m in FindAnyToOneInstance(input.GetType(), output.GetType()))
         {
           // get the cookie for this invocation
           var cookie = m.InvokeWithNoArgument(input);

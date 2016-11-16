@@ -1,0 +1,102 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+<#
+  foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
+  {
+    try
+    {
+      #> // <#= ass.GetName().Name 
+      #>
+      <#
+      foreach (var type in ass.ExportedTypes)
+      {
+        var name = ass.GetName().Name;
+        if (name.Contains("VisualStudio") || name.Contains("Temporary")) continue;
+        
+        var methods = type.GetMethods();
+
+        foreach (
+          var method in
+          methods.Where(
+            m =>
+              type == typeof(string) && m.IsStatic && m.ReturnType == typeof(bool) &&
+              (
+              m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == typeof(string)
+              /*
+              m.GetParameters().Length == 0
+              ||
+              (m.GetParameters().Length == 1 && m.GetParameters()[0].GetCustomAttribute<ParamArrayAttribute>() != null)
+              ||
+              m.GetParameters().All(p => p.HasDefaultValue)
+              */
+              )
+              ))
+        {
+          #> // <#= method.Name 
+          #><#
+        }
+      }
+    }
+    catch (Exception)
+    {
+      #> // cannot get exported types of <#= ass.GetName().Name 
+      #> <#
+    }
+    
+  }
+#>
+
+namespace CallSharp
+{
+  using System;
+  using System.Collections.Generic;
+  using System.Reflection;
+
+  public class StaticMemberDatabase : IMemberDatabase
+  {
+    public IEnumerable<MethodInfo> FindAnyToOneInstance(Type inputType, Type ignoreThisOutputType)
+    {
+      throw new NotImplementedException();
+      <#
+
+      #>
+    }
+
+    public IEnumerable<MethodInfo> FindAnyToOneStatic(Type inputType, Type ignoreThisOutputType)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IEnumerable<ConstructorInfo> FindConstructorFor(Type inputType, Type outputType)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IEnumerable<MethodInfo> FindOneToOneInstance(Type inputType, Type outputType)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IEnumerable<MethodInfo> FindOneToTwoInstance(Type inputType, Type outputType)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IEnumerable<MethodInfo> FindOneToOneStatic(Type inputType, Type outputType)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IEnumerable<string> FindCandidates(object input, object output, int depth,
+      string callChain = "input")
+    {
+      throw new NotImplementedException();
+    }
+  }
+}

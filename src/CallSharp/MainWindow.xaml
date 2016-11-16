@@ -77,6 +77,12 @@
       <Button Height="50" Margin="3" VerticalAlignment="Top"
               x:Name="BtnCopy" Click="BtnCopy_OnClick">Copy Selected</Button>
       <CheckBox Margin="3" x:Name="CbScaleWindow" Checked="ToggleButton_OnChecked" Visibility="Collapsed">Scale window</CheckBox>
+      <Button Height="50" Margin="3" VerticalAlignment="Top"
+              Name="BtnCopyAllCandidates" Click="BtnCopyAllCandidates_OnClick">
+        <TextBlock TextAlignment="Center">
+          <Run>Copy All Candidates</Run>
+        </TextBlock>
+      </Button>
     </StackPanel>
     <ListBox Grid.Row="4" Grid.Column="1" Margin="3" 
              FontFamily="{StaticResource theFont}"

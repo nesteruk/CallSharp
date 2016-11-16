@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
-namespace CallSharp
+﻿namespace CallSharp
 {
+  using System;
+  using System.Linq;
+  using System.Reflection;
+  using System.Text;
+
   /// <summary>
   /// This class contains all the information about an attempt to call
   /// a particular function on an input object. It contains information
@@ -76,7 +76,11 @@ namespace CallSharp
           // todo: literalize argument into code
           if (arg is string)
           {
-            sb.AppendFormat("\"{0}\"", arg);
+            string s = (string) arg;
+            if (s.Length == 0)
+              sb.Append("string.Empty");
+            else
+              sb.AppendFormat("\"{0}\"", arg);
           }
           else if (arg is char)
           {

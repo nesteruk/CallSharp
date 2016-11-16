@@ -30,7 +30,7 @@
     <ProductName>CallSharp</ProductName>
     <PublisherName>ActiveMesa</PublisherName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>7</ApplicationRevision>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>0.1.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -93,12 +93,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Db\IMemberDatabase.cs" />
+    <Compile Include="Db\StaticMemberDatabase.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StaticMemberDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Fragmentation\IFragmentationEngine.cs" />
+    <Compile Include="Fragmentation\NullFragmentationEngine.cs" />
     <Compile Include="PermuteUtils.cs" />
     <Compile Include="Cuda.cs" />
     <Compile Include="MagicTextBox.cs" />
     <Compile Include="ScaleToWindowSizeBehavior.cs" />
     <Compile Include="Empty.cs" />
-    <Compile Include="FragmentationExtensions.cs" />
+    <Compile Include="Fragmentation\FragmentationEngine.cs" />
     <Compile Include="MethodCallCookie.cs" />
     <Compile Include="TypeDatabase.cs" />
     <Compile Include="TypeToStringConverter.cs" />
@@ -118,7 +126,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MemberDatabase.cs" />
+    <Compile Include="Db\DynamicMemberDatabase.cs" />
     <Compile Include="ObservableHashSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -158,6 +166,15 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Db\StaticMemberDatabase.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>StaticMemberDatabase.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

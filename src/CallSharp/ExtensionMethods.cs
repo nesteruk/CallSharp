@@ -1,15 +1,15 @@
-﻿using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
-
-namespace CallSharp
+﻿namespace CallSharp
 {
+  using System;
+  using System.CodeDom;
+  using System.CodeDom.Compiler;
+  using System.Collections.Generic;
+  using System.IO;
+  using System.Linq;
+  using System.Reflection;
+  using System.Runtime.CompilerServices;
+  using JetBrains.Annotations;
+
   public static class ExtensionMethods
   {
     public static string RemoveMarkers(this string s)
@@ -27,6 +27,11 @@ namespace CallSharp
       return pi.GetCustomAttribute<ParamArrayAttribute>() != null;
     }
 
+    public static bool ProvisionOfThisArgumentIsOptional(this ParameterInfo pi)
+    {
+      return pi.IsParams() || pi.HasDefaultValue;
+    }
+
     [CanBeNull]
     public static MethodCallCookie InvokeStaticWithSingleArgument<T>(this MethodInfo mi,
       T arg)
@@ -34,7 +39,7 @@ namespace CallSharp
       MethodCallCookie result = null;
       try
       {
-        var args = new object[] {arg};
+        var args = new object[] { arg };
         var retval = mi.Invoke(null /*static*/, args);
         result = new MethodCallCookie(mi, args, retval);
       }
@@ -45,14 +50,53 @@ namespace CallSharp
       return result;
     }
 
+    public static IEnumerable<T[]> Combinations<T>(this T[] values, int k)
+    {
+      if (k < 0 || values.Length < k)
+        yield break; // invalid parameters, no combinations possible
+
+      // generate the initial combination indices
+      var combIndices = new int[k];
+      for (var i = 0; i < k; i++)
+      {
+        combIndices[i] = i;
+      }
+
+      while (true)
+      {
+        // return next combination
+        var combination = new T[k];
+        for (var i = 0; i < k; i++)
+        {
+          combination[i] = values[combIndices[i]];
+        }
+        yield return combination;
+
+        // find first index to update
+        var indexToUpdate = k - 1;
+        while (indexToUpdate >= 0 && combIndices[indexToUpdate] >= values.Length - k + indexToUpdate)
+        {
+          indexToUpdate--;
+        }
+
+        if (indexToUpdate < 0)
+          yield break; // done
+
+        // update combination indices
+        for (var combIndex = combIndices[indexToUpdate] + 1; indexToUpdate < k; indexToUpdate++, combIndex++)
+        {
+          combIndices[indexToUpdate] = combIndex;
+        }
+      }
+    }
+
     [CanBeNull]
-    public static MethodCallCookie InvokeWithSingleArgument<T>(this MethodInfo mi, T self,
-      T arg)
+    public static MethodCallCookie InvokeWithArguments(this MethodInfo mi, object self,
+      params object[] args)
     {
       MethodCallCookie result = null;
       try
       {
-        var args = new object[] {arg};
         var retval = mi.Invoke(self, args);
         result = new MethodCallCookie(mi, args, retval);
       }
@@ -84,7 +128,10 @@ namespace CallSharp
           var retval = mi.Invoke(subject, Empty.ObjectArray);
           result = new MethodCallCookie(mi, Empty.ObjectArray, retval);
         }
-      } catch { }
+      }
+      catch
+      {
+      }
       return result;
     }
 
@@ -106,18 +153,45 @@ namespace CallSharp
       foreach (var type in TypeDatabase.ParseableTypes)
       {
         foreach (var m in type.GetMethods().Where(
-          x => x.Name.Equals("TryParse") 
-          && x.GetParameters().Length == 2))
+          x => x.Name.Equals("TryParse")
+               && x.GetParameters().Length == 2))
         {
           // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
-          object[] pars = {text, null};
-          bool ok = (bool) m.Invoke(null, pars);
+          object[] pars = { text, null };
+          bool ok = (bool)m.Invoke(null, pars);
           if (ok)
           {
             result.Add(pars[1]);
           }
         }
       }
+
+      // try to decompose and see if it makes sense
+      var commaSeparated = text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+      if (commaSeparated.Length > 1)
+      {
+        // does every separated part parse under this model
+        foreach (var type in TypeDatabase.ParseableTypes)
+        {
+          foreach (var m in type.GetMethods().Where(
+            x => x.Name.Equals("TryParse")
+                 && x.GetParameters().Length == 2))
+          {
+            // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
+
+            // parse on every argument
+            var ok = commaSeparated.Select(part => (bool) m.Invoke(null,
+              new object[] {part, null}));
+
+            if (ok.All(x=>x))
+            {
+              //result.Add(pars[1]);
+              result.Add(typeof(List<>).MakeGenericType(type));
+            }
+          }
+        }
+      }
+
       return result;
     }
 
@@ -144,7 +218,7 @@ namespace CallSharp
     }
 
     private static IEnumerable<T> concatIterator<T>(T extraElement,
-        IEnumerable<T> source, bool insertAtStart)
+      IEnumerable<T> source, bool insertAtStart)
     {
       if (insertAtStart)
         yield return extraElement;
@@ -157,26 +231,109 @@ namespace CallSharp
     public static string GetFriendlyName(this Type type)
     {
       var codeDomProvider = CodeDomProvider.CreateProvider("C#");
-      var typeReferenceExpression = new CodeTypeReferenceExpression(new CodeTypeReference(type));
+      var typeReferenceExpression =
+        new CodeTypeReferenceExpression(new CodeTypeReference(
+          type.Name.Contains("RuntimeType") ? type.UnderlyingSystemType : type
+        ));
       using (var writer = new StringWriter())
       {
-        codeDomProvider.GenerateCodeFromExpression(typeReferenceExpression, writer, new CodeGeneratorOptions());
+        codeDomProvider.GenerateCodeFromExpression(typeReferenceExpression, writer,
+          new CodeGeneratorOptions());
         return writer.GetStringBuilder().Replace("System.", string.Empty).ToString();
       }
     }
 
-    static Dictionary<Type, HashSet<Type>> conversionMap = new Dictionary<Type, HashSet<Type>>
+    static readonly Dictionary<Type, HashSet<Type>> conversionMap = new Dictionary
+      <Type, HashSet<Type>>
+      {
+        {
+          typeof(decimal), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(char)
+          }
+        },
+        {
+          typeof(double), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(char),
+            typeof(float)
+          }
+        },
+        {
+          typeof(float), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(char),
+            typeof(float)
+          }
+        },
+        {
+          typeof(ulong),
+          new HashSet<Type> {typeof(byte), typeof(ushort), typeof(uint), typeof(char)}
+        },
+        {
+          typeof(long), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(char)
+          }
+        },
+        {typeof(uint), new HashSet<Type> {typeof(byte), typeof(ushort), typeof(char)}},
+        {
+          typeof(int),
+          new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(char)
+          }
+        },
+        {typeof(ushort), new HashSet<Type> {typeof(byte), typeof(char)}},
+        {typeof(short), new HashSet<Type> {typeof(byte)}}
+      };
+
+    public static void AddTo<T>(this T item, ICollection<T> coll)
     {
-        { typeof(decimal), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) } },
-        { typeof(double), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
-        { typeof(float), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char), typeof(float) } },
-        { typeof(ulong), new HashSet<Type> { typeof(byte), typeof(ushort), typeof(uint), typeof(char) } },
-        { typeof(long), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(char) } },
-        { typeof(uint), new HashSet<Type> { typeof(byte), typeof(ushort), typeof(char) } },
-        { typeof(int), new HashSet<Type> { typeof(sbyte), typeof(byte), typeof(short), typeof(ushort), typeof(char) } },
-        { typeof(ushort), new HashSet<Type> { typeof(byte), typeof(char) } },
-        { typeof(short), new HashSet<Type> { typeof(byte) } }
-    };
+      coll.Add(item);
+    }
+
+    public static void AddTo<T>(this IEnumerable<T> items, ICollection<T> coll)
+    {
+      foreach (var item in items)
+      {
+        coll.Add(item);
+      }
+    }
 
     public static bool IsConvertibleTo(this Type from, Type to)
     {

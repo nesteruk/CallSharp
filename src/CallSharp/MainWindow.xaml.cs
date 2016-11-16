@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Documents;
-using JetBrains.Annotations;
+﻿using System.Text;
 
 namespace CallSharp
 {
+  using System;
+  using System.Linq;
+  using System.Reflection;
+  using System.Threading.Tasks;
+  using System.Windows;
+  using System.Windows.Documents;
+
   public partial class MainWindow : Window
   {
-    private MemberDatabase memberDatabase = new MemberDatabase();
+    private readonly DynamicMemberDatabase dynamicMemberDatabase = new DynamicMemberDatabase();
     private static object[] noArgs = { };
 
     public ObservableHashSet<string> Candidates
@@ -120,7 +118,8 @@ namespace CallSharp
     private static void OutputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
       var self = (MainWindow) d;
-      var parsedValues = ((string)e.NewValue).InferTypes();
+
+      var parsedValues = ((string)e.NewValue).InferTypes(); // scalar types
       parsedValues.Add(e.NewValue);
       if (parsedValues.Any())
       {
@@ -168,7 +167,7 @@ namespace CallSharp
       Candidates.Clear();
       
       Task.Factory.StartNew(() =>
-        memberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
+        dynamicMemberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
         .ContinueWith(task =>
         {
           foreach (var x in task.Result) Candidates.Add(x);
@@ -187,6 +186,16 @@ namespace CallSharp
     private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
     {
       ScaleWindow = CbScaleWindow.IsChecked;
+    }
+
+    private void BtnCopyAllCandidates_OnClick(object sender, RoutedEventArgs e)
+    {
+      var sb = new StringBuilder();
+      foreach (var c in LbCandidates.Items)
+      {
+        sb.AppendLine(c.ToString());
+      }
+      Clipboard.SetText(sb.ToString());
     }
   }
 }

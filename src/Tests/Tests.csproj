@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Categories.cs" />
     <Compile Include="BasicMatchTests.cs" />
+    <Compile Include="FragTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
