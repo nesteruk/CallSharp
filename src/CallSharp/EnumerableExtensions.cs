@@ -36,20 +36,21 @@ namespace CallSharp
     /// <param name="item">The item to locate.</param>
     /// <param name="itemComparer">The item equality comparer to use.  Pass null to use the default comparer.</param>
     /// <returns>The index of the entry if it was found in the sequence; otherwise, -1.</returns>
-    public static int IndexOf<TSource>(this IEnumerable<TSource> source, TSource item, IEqualityComparer<TSource> itemComparer)
+    public static int IndexOf<TSource>(this IEnumerable<TSource> source, TSource item,
+	    IEqualityComparer<TSource> itemComparer)
     {
       if (source == null)
       {
-        throw new ArgumentNullException("source");
+        throw new ArgumentNullException(nameof(source));
       }
 
-      IList<TSource> listOfT = source as IList<TSource>;
+      var listOfT = source as IList<TSource>;
       if (listOfT != null)
       {
         return listOfT.IndexOf(item);
       }
 
-      IList list = source as IList;
+      var list = source as IList;
       if (list != null)
       {
         return list.IndexOf(item);

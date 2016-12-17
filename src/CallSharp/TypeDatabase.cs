@@ -38,7 +38,7 @@ namespace CallSharp
       typeof(TimeSpan)
     };
 
-    // todo: simply search for those types which have Parse()
+    // todo: simply search for those types which have TryParse()
     public static HashSet<Type> ParseableTypes = new HashSet<Type>(integralTypes
       .Prepend(typeof(bool))
       .Concat(floatingPointTypes)
@@ -55,6 +55,8 @@ namespace CallSharp
     public static HashSet<Type> CoreTypes = new HashSet<Type>( 
       ParseableTypes
       .Append(typeof(Enumerable))
-      .Append(typeof(Math)));
+      .Append(typeof(Math))
+	    .Append(typeof(ExtensionMethods))
+    );
   }
 }

@@ -45,6 +45,11 @@
             foreach (var x in PermuteUtils.Permute(allChars, i))
               yield return x.ToArray();
         }
+        else if (partType == typeof(int))
+        {
+	        for (int i = 0; i < s.Length; ++i)
+		        yield return i;
+        }
       }
 
     }

@@ -89,7 +89,7 @@
              ItemsSource="{Binding Candidates}"
              x:Name="LbCandidates"/>
 
-    <StatusBar Grid.Row="5" Grid.ColumnSpan="2">
+    <StatusBar Grid.Row="5" Grid.ColumnSpan="2" Visibility="Collapsed">
       <StatusBarItem>
         <TextBlock Name="TbInfo" FontSize="{StaticResource smallFontSize}" />
       </StatusBarItem>

@@ -174,7 +174,7 @@ namespace CallSharp
     /// <returns></returns>
     public IEnumerable<MethodInfo> FindOneToOneStatic(Type inputType, Type outputType)
     {
-      // search in ALL core types types :)
+      // search in ALL core types :)
       // warning: allowing other types is NOT SAFE because you might call File.Delete or something
       foreach (var method in staticMethods.AsParallel().Where(m =>
         m.ReturnType.IsConvertibleTo(outputType)

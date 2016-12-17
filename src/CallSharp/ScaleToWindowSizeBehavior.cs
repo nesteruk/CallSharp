@@ -33,10 +33,12 @@ namespace CallSharp
       FrameworkElement mainElement = target as FrameworkElement;
       MainWindow window = e.NewValue as MainWindow;
 
-      ScaleTransform scaleTransform = new ScaleTransform();
-      scaleTransform.CenterX = 0;
-      scaleTransform.CenterY = 0;
-      Binding scaleValueBinding = new Binding
+	    ScaleTransform scaleTransform = new ScaleTransform
+	    {
+		    CenterX = 0,
+		    CenterY = 0
+	    };
+	    Binding scaleValueBinding = new Binding
       {
         Source = window,
         Path = new PropertyPath(ScaleValueProperty)

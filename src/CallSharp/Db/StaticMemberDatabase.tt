@@ -2,44 +2,81 @@
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Reflection" #>
 <#@ import namespace="System.Linq" #>
+<#@ import namespace="System.IO" #>
 <#@ import namespace="System.Text" #>
+<#@ import namespace="System.CodeDom" #>
+<#@ import namespace="System.CodeDom.Compiler" #>
 <#@ import namespace="System.Collections.Generic" #>
+
 <#@ output extension=".cs" #>
 
 <#
+
+  var allowedTypes = new HashSet<Type>
+  {
+  typeof(int),
+      typeof(long),
+      typeof(short),
+      typeof(sbyte),
+	  typeof(uint),
+      typeof(ulong),
+      typeof(ushort),
+      typeof(byte),
+    typeof(bool),
+	typeof(float),
+      typeof(double),
+      typeof(decimal),
+	   typeof(DateTime),
+      typeof(TimeSpan),
+      typeof(char),
+      typeof(string),
+	typeof(Enumerable),
+  typeof(Math)
+  };
+
+  Func<Type, string> getFriendlyName = (Type type) =>
+  {
+      var codeDomProvider = CodeDomProvider.CreateProvider("C#");
+      var typeReferenceExpression =
+        new CodeTypeReferenceExpression(new CodeTypeReference(
+          type.Name.Contains("RuntimeType") ? type.UnderlyingSystemType : type
+        ));
+      using (var writer = new StringWriter())
+      {
+        codeDomProvider.GenerateCodeFromExpression(typeReferenceExpression, writer,
+          new CodeGeneratorOptions());
+        return writer.GetStringBuilder().Replace("System.", string.Empty).ToString();
+      }
+  };
+
+  Func<ParameterInfo, bool> isParams = pi => pi.GetCustomAttribute<ParamArrayAttribute>() != null;
+
+  Func<ParameterInfo[], bool> isSingleParamsArgument = ps => ps.Length == 1 && isParams(ps[0]);
+  
+  var allMethods = new List<MethodInfo>();
+  var allConstructors = new List<ConstructorInfo>();
+
   foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
   {
     try
     {
-      #> // <#= ass.GetName().Name 
-      #>
-      <#
-      foreach (var type in ass.ExportedTypes)
+      foreach (var type in ass.ExportedTypes.Where(t => allowedTypes.Contains(t)))
       {
         var name = ass.GetName().Name;
         if (name.Contains("VisualStudio") || name.Contains("Temporary")) continue;
         
         var methods = type.GetMethods();
 
+        allMethods.AddRange(methods);
+
         foreach (
-          var method in
-          methods.Where(
-            m =>
-              type == typeof(string) && m.IsStatic && m.ReturnType == typeof(bool) &&
-              (
-              m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == typeof(string)
-              /*
-              m.GetParameters().Length == 0
-              ||
-              (m.GetParameters().Length == 1 && m.GetParameters()[0].GetCustomAttribute<ParamArrayAttribute>() != null)
-              ||
-              m.GetParameters().All(p => p.HasDefaultValue)
-              */
-              )
-              ))
+          var ctor in type.GetConstructors().Where(c => !c.ContainsGenericParameters &&
+                                                        c.GetParameters().Length == 1 &&
+                                                        !c.GetParameters()[0].ParameterType.IsPointer))
         {
-          #> // <#= method.Name 
-          #><#
+          #>// <#= ctor.DeclaringType.Name #>
+          <#
+          allConstructors.Add(ctor);
         }
       }
     }
@@ -55,48 +92,212 @@
 namespace CallSharp
 {
   using System;
+  using System.Diagnostics;
   using System.Collections.Generic;
-  using System.Reflection;
 
-  public class StaticMemberDatabase : IMemberDatabase
+  class StaticMemberDatabase : IMemberDatabase
   {
-    public IEnumerable<MethodInfo> FindAnyToOneInstance(Type inputType, Type ignoreThisOutputType)
-    {
-      throw new NotImplementedException();
-      <#
-
-      #>
-    }
-
-    public IEnumerable<MethodInfo> FindAnyToOneStatic(Type inputType, Type ignoreThisOutputType)
-    {
-      throw new NotImplementedException();
-    }
-
-    public IEnumerable<ConstructorInfo> FindConstructorFor(Type inputType, Type outputType)
-    {
-      throw new NotImplementedException();
-    }
-
-    public IEnumerable<MethodInfo> FindOneToOneInstance(Type inputType, Type outputType)
-    {
-      throw new NotImplementedException();
-    }
-
-    public IEnumerable<MethodInfo> FindOneToTwoInstance(Type inputType, Type outputType)
-    {
-      throw new NotImplementedException();
-    }
-
-    public IEnumerable<MethodInfo> FindOneToOneStatic(Type inputType, Type outputType)
-    {
-      throw new NotImplementedException();
-    }
-
     public IEnumerable<string> FindCandidates(object input, object output, int depth,
       string callChain = "input")
     {
-      throw new NotImplementedException();
+      Trace.WriteLine(callChain);
+
+	    if (input.Equals(output))
+      {
+        yield return callChain;
+        yield break;
+      }
+
+	    // here we try to brute-force conversion of input to output
+      // if it succeeds, we break as before
+      object newValue = null;
+      try
+      {
+        newValue = Convert.ChangeType(output, input.GetType());
+      } catch (Exception) { }
+      if (input.Equals(newValue))
+      {
+        yield return callChain;
+        yield break;
+      }
+
+	    bool foundSomething = false;
+
+	    // contains all calls that didn't yield the right result
+      var failCookies = new List<MethodCallCookie>();
+
+	    // 1) Look for all matching constructors.
+      <#
+  foreach (var ctor in allConstructors)
+  {
+    #>if (output is <#= ctor.DeclaringType.FullName #> && input is <#= ctor.GetParameters()[0].ParameterType.FullName #>)
+    {
+      var instance = new <#= ctor.DeclaringType.FullName #>((<#= ctor.GetParameters()[0].ParameterType.FullName #>)input);
+      if (instance == (<#= ctor.DeclaringType.FullName #>)output)
+      {
+        yield return $"new <#=getFriendlyName(ctor.DeclaringType)#>({callChain})";
+        foundSomething = true;
+      }
+    }
+    <#
+  }
+  #>
+    // 2) 1-to-1 instance functions.
+    <# 
+    foreach (var method in allMethods.Where(m => !m.IsStatic &&
+    (
+      m.GetParameters().Length == 0
+      ||
+      m.GetParameters().All(p => p.IsOptional)
+      ||
+      isSingleParamsArgument(m.GetParameters())
+    )))
+  { // TODO: group by in/out pairs
+    #>
+    if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.DeclaringType.Name #>).IsConvertibleTo(output.GetType()))
+    {
+      // invoke!
+      <# if (method.Name.StartsWith("get_"))
+    { #>
+      var result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name.Substring(4) #>;
+      <# }
+    else
+    { #>
+      var result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name #>();
+      <# } #>
+      if (result == (<#= method.ReturnType.FullName #>)output)
+      {
+        <#
+        // TODO: staticize MethodCallCookie
+        var cookie = new MethodCallCookie(
+          method,
+          new object[]{}
+        );
+        #>
+        yield return string.Format("<#= cookie.ToString() #>", callChain);
+      }
+    }
+    <#
+  }
+  #>
     }
   }
 }
+
+<#+
+
+  /// <summary>
+  /// This class contains all the information about an attempt to call
+  /// a particular function on an input object. It contains information
+  /// about the function called, the arguments that were applied and
+  /// the resulting return value.
+  /// </summary>
+  public class MethodCallCookie
+  {
+    public MethodInfo MethodCalled;
+    public object[] Arguments;
+    public object ReturnValue;
+
+    public MethodCallCookie(MethodInfo methodCalled, object[] arguments)
+    {
+      MethodCalled = methodCalled;
+      Arguments = arguments;
+    }
+
+    /// <summary>
+    /// The type of the return value.
+    /// </summary>
+    //public Type ReturnType => ReturnValue.GetType();
+
+    Func<Type, string> getFriendlyName = (Type type) =>
+  {
+      var codeDomProvider = CodeDomProvider.CreateProvider("C#");
+      var typeReferenceExpression =
+        new CodeTypeReferenceExpression(new CodeTypeReference(
+          type.Name.Contains("RuntimeType") ? type.UnderlyingSystemType : type
+        ));
+      using (var writer = new StringWriter())
+      {
+        codeDomProvider.GenerateCodeFromExpression(typeReferenceExpression, writer,
+          new CodeGeneratorOptions());
+        return writer.GetStringBuilder().Replace("System.", string.Empty).ToString();
+      }
+  };
+
+  static Func<ParameterInfo, bool> isParams = pi => pi.GetCustomAttribute<ParamArrayAttribute>() != null;
+
+  static Func<ParameterInfo[], bool> isSingleParamsArgument = ps => ps.Length == 1 && isParams(ps[0]);
+
+    public string ToString(string subject = "{0}")
+    {
+      var sb = new StringBuilder();
+      var methodParams = MethodCalled.GetParameters();
+
+      // we either called it on a member . or on static X.
+      if (MethodCalled.IsStatic)
+        sb.Append(getFriendlyName(MethodCalled.DeclaringType));
+      else
+        sb.Append(subject);
+      sb.Append(".");
+
+      if (MethodCalled.Name.StartsWith("get_"))
+      {
+        // just a property
+        sb.Append(MethodCalled.Name.Substring(4));
+      }
+      else
+      {
+        sb.Append(MethodCalled.Name).Append("(");
+
+        int start = MethodCalled.IsStatic ? 1 : 0;
+        for (int i = start; i < Arguments.Length; i++)
+        {
+          var arg = Arguments[i];
+          bool ip = isParams(methodParams[i]);
+          
+          // caveat: calling a params[] really passes in a single
+          // 0-sized array :( need special handling
+          var arr = arg as Array;
+          if (arr != null && arr.Length == 0)
+            break;
+
+          // todo: literalize argument into code
+          if (arg is string)
+          {
+            string s = (string) arg;
+            if (s.Length == 0)
+              sb.Append("string.Empty");
+            else
+              sb.AppendFormat("\"{0}\"", arg);
+          }
+          else if (arg is char)
+          {
+            sb.AppendFormat("\'{0}'", arg);
+          }
+          else if (arg is char[])
+          {
+            if (!ip) sb.Append("new char[]{");
+            sb.Append(string.Join(",", ((char[]) arg).Select(c => "'" + c + "'")));
+            if (!ip) sb.Append("}");
+          }
+          else
+          {
+            sb.Append(arg);
+          }
+
+          if (i+1 != Arguments.Length)
+            sb.Append(", ");
+        }
+
+        // on the other hand, a static call has NO arguments, so...
+        if (MethodCalled.IsStatic)
+          sb.Append(subject);
+
+        sb.Append(")");
+      }
+      return sb.ToString();
+    }
+  }
+
+#>
+

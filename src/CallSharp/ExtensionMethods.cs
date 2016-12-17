@@ -12,6 +12,11 @@
 
   public static class ExtensionMethods
   {
+	  public static bool False(this string s)
+	  {
+		  return false;
+	  }
+
     public static string RemoveMarkers(this string s)
     {
       return s.Replace(MagicTextBox.SpaceChar, ' ');
