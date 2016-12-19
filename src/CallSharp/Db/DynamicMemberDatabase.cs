@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 
 namespace CallSharp
 {
+  [Obsolete("This is far too slow, use StaticMemberDatabase", true)]
   public class DynamicMemberDatabase : IMemberDatabase
   {
     private readonly HashSet<MethodInfo> staticMethods = new HashSet<MethodInfo>();

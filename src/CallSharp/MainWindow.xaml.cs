@@ -11,7 +11,7 @@ namespace CallSharp
 
   public partial class MainWindow : Window
   {
-    private readonly IMemberDatabase dynamicMemberDatabase = new DynamicMemberDatabase();
+    private readonly IMemberDatabase dynamicMemberDatabase = new StaticMemberDatabase();
     private static object[] noArgs = { };
 
     public ObservableHashSet<string> Candidates

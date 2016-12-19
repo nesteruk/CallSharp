@@ -14,24 +14,24 @@
 
   var allowedTypes = new HashSet<Type>
   {
-  typeof(int),
-      typeof(long),
-      typeof(short),
-      typeof(sbyte),
+    typeof(int),
+    typeof(long),
+    typeof(short),
+    typeof(sbyte),
 	  typeof(uint),
-      typeof(ulong),
-      typeof(ushort),
-      typeof(byte),
+    typeof(ulong),
+    typeof(ushort),
+    typeof(byte),
     typeof(bool),
-	typeof(float),
-      typeof(double),
-      typeof(decimal),
-	   typeof(DateTime),
-      typeof(TimeSpan),
-      typeof(char),
-      typeof(string),
-	typeof(Enumerable),
-  typeof(Math)
+	  typeof(float),
+    typeof(double),
+    typeof(decimal),
+	  typeof(DateTime),
+    typeof(TimeSpan),
+    typeof(char),
+    typeof(string),
+	  typeof(Enumerable),
+    typeof(Math)
   };
 
   Func<Type, string> getFriendlyName = (Type type) =>
@@ -52,6 +52,106 @@
   Func<ParameterInfo, bool> isParams = pi => pi.GetCustomAttribute<ParamArrayAttribute>() != null;
 
   Func<ParameterInfo[], bool> isSingleParamsArgument = ps => ps.Length == 1 && isParams(ps[0]);
+
+      Dictionary<Type, HashSet<Type>> conversionMap = new Dictionary
+      <Type, HashSet<Type>>
+      {
+        {
+          typeof(decimal), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(char)
+          }
+        },
+        {
+          typeof(double), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(char),
+            typeof(float)
+          }
+        },
+        {
+          typeof(float), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(char),
+            typeof(float)
+          }
+        },
+        {
+          typeof(ulong),
+          new HashSet<Type> {typeof(byte), typeof(ushort), typeof(uint), typeof(char)}
+        },
+        {
+          typeof(long), new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(char)
+          }
+        },
+        {typeof(uint), new HashSet<Type> {typeof(byte), typeof(ushort), typeof(char)}},
+        {
+          typeof(int),
+          new HashSet<Type>
+          {
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(char)
+          }
+        },
+        {typeof(ushort), new HashSet<Type> {typeof(byte), typeof(char)}},
+        {typeof(short), new HashSet<Type> {typeof(byte)}}
+      };
+
+
+      var provisionOfThisArgumentIsOptional = new Func<ParameterInfo, bool>((ParameterInfo pi) => isParams(pi) || pi.HasDefaultValue);
+
+  var isConvertibleTo = new Func<Type, Type, bool>((Type from, Type to) =>
+  {
+    if (from == to || to.IsAssignableFrom(from))
+    {
+      return true;
+    }
+    if (conversionMap.ContainsKey(to) && conversionMap[to].Contains(from))
+    {
+      return true;
+    }
+    bool castable = from.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Any(
+                        m => m.ReturnType == to &&
+                        (m.Name == "op_Implicit" || m.Name == "op_Explicit")
+                    );
+    return castable;
+  });
   
   var allMethods = new List<MethodInfo>();
   var allConstructors = new List<ConstructorInfo>();
@@ -74,8 +174,6 @@
                                                         c.GetParameters().Length == 1 &&
                                                         !c.GetParameters()[0].ParameterType.IsPointer))
         {
-          #>// <#= ctor.DeclaringType.Name #>
-          <#
           allConstructors.Add(ctor);
         }
       }
@@ -97,10 +195,15 @@ namespace CallSharp
 
   class StaticMemberDatabase : IMemberDatabase
   {
+    private readonly IFragmentationEngine fragEngine = new FragmentationEngine();
+
     public IEnumerable<string> FindCandidates(object input, object output, int depth,
       string callChain = "input")
     {
       Trace.WriteLine(callChain);
+
+      var inputType = input.GetType();
+      var outputType = output.GetType();
 
 	    if (input.Equals(output))
       {
@@ -113,7 +216,7 @@ namespace CallSharp
       object newValue = null;
       try
       {
-        newValue = Convert.ChangeType(output, input.GetType());
+        newValue = Convert.ChangeType(output, inputType);
       } catch (Exception) { }
       if (input.Equals(newValue))
       {
@@ -125,6 +228,8 @@ namespace CallSharp
 
 	    // contains all calls that didn't yield the right result
       var failCookies = new List<MethodCallCookie>();
+
+      // note: technically, we collect fail cookies. or used to.
 
 	    // 1) Look for all matching constructors.
       <#
@@ -154,7 +259,7 @@ namespace CallSharp
     )))
   { // TODO: group by in/out pairs
     #>
-    if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.DeclaringType.Name #>).IsConvertibleTo(output.GetType()))
+    if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
     {
       // invoke!
       <# if (method.Name.StartsWith("get_"))
@@ -168,7 +273,6 @@ namespace CallSharp
       if (result == (<#= method.ReturnType.FullName #>)output)
       {
         <#
-        // TODO: staticize MethodCallCookie
         var cookie = new MethodCallCookie(
           method,
           new object[]{}
@@ -180,6 +284,198 @@ namespace CallSharp
     <#
   }
   #>
+  // 3. Search static members
+  <#
+  foreach (var method in allMethods.Where(m => m.IsStatic && (
+    !m.Name.Equals("Parse") // throws
+    &&
+    !m.Name.Equals("Delete") // just in case
+    &&
+    m.GetParameters().Length == 1  
+    &&
+    !m.GetParameters()[0].ParameterType.IsGenericType  
+    && 
+    !m.ReturnType.IsGenericType     
+    &&
+    !m.Name.StartsWith("op_")                                    
+  )))
+  {
+    var parameters = method.GetParameters();
+    // ensure input type is convertible to first parameter
+    // todo: ensure we are avoiding ref/out
+    #>
+    if (inputType.IsConvertibleTo(typeof(<#= parameters[0].ParameterType.FullName #>)) &&
+        typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = <#= method.DeclaringType.FullName #>.<#= method.Name #>((<#= parameters[0].ParameterType.FullName #>)input);
+        if (result == (<#= method.ReturnType.FullName #>)output)
+        <#
+        var cookie = new MethodCallCookie(method, new []{ "{0}" });
+        #>
+          retVal = string.Format("<#= cookie.ToString() #>", callChain);
+      }
+      catch {}
+      if (retVal != null) yield return retVal;
+    }
+    <#
+  }
+  #>
+  // 4. Single-argument fragmentation (1-to-2 instance)
+  if (!foundSomething)
+  {
+    
+    <#
+      int numberOfNonOptionalArguments = 1;
+      foreach (var method in allMethods.Where(m =>
+        !m.IsStatic
+        &&
+        m.GetParameters().Count(p => !provisionOfThisArgumentIsOptional(p)) ==
+          numberOfNonOptionalArguments
+        &&
+        !m.Name.StartsWith("get_") // can actually be an indexer, cannot handle those
+  ))
+  {
+    // check in-out
+    // todo: get fragmentations first for each type
+    #>
+    foreach (var arg in fragEngine.Frag(input, typeof(<#= method.GetParameters()[0].ParameterType.FullName #>)))
+    {
+      if (input is <#= method.DeclaringType.Name #> 
+          && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
+      {
+        var result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name #>((<#= method.GetParameters()[0].ParameterType.FullName #>)arg);
+        if (result == (<#= method.ReturnType.FullName #>)output)
+        {
+          <#
+          var cookie = new MethodCallCookie(method, new object []{"{1}"});
+          #>
+          yield return string.Format("<#= cookie.ToString() #>", callChain, 
+            ((<#= method.GetParameters()[0].ParameterType.FullName #>)arg));
+        }
+      }
+    }
+    <#
+  }
+  #>
+
+    // 5. Two-argument fragmentation; like the above but with quad the complexity.
+    if (!foundSomething)
+  {
+    
+    <#
+      numberOfNonOptionalArguments = 2;
+      foreach (var method in allMethods.Where(m =>
+        !m.IsStatic
+        &&
+        m.GetParameters().Count(p => !provisionOfThisArgumentIsOptional(p)) ==
+          numberOfNonOptionalArguments
+        &&
+        !m.Name.StartsWith("get_") // can actually be an indexer, cannot handle those
+  ))
+  {
+    // check in-out
+    // todo: get fragmentations first for each type
+    #>foreach (var arg1 in fragEngine.Frag(input, typeof(<#= method.GetParameters()[0].ParameterType.FullName #>)))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(<#= method.GetParameters()[1].ParameterType.FullName #>)))
+    {
+      if (input is <#= method.DeclaringType.Name #> 
+          && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
+      {
+        var result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name #>(
+          (<#= method.GetParameters()[0].ParameterType.FullName #>)arg1,
+          (<#= method.GetParameters()[1].ParameterType.FullName #>)arg2
+        );
+        if (result == (<#= method.ReturnType.FullName #>)output)
+        {
+          <#
+          var cookie = new MethodCallCookie(method, new object []{"{1}", "{2}"});
+          #>yield return string.Format("<#= cookie.ToString() #>", callChain, 
+            ((<#= method.GetParameters()[0].ParameterType.FullName #>)arg1),
+            ((<#= method.GetParameters()[0].ParameterType.FullName #>)arg2)
+          );
+        }
+      }
+    }
+    <#
+  }
+  #>
+
+  // 5. Assuming we found nothing and aren't in too deep (any-to-1), look for
+  //    methods which do NOT yield outputType
+  if (!foundSomething && depth < 2)
+  {
+    <#
+  foreach (var method in allMethods.Where(m =>
+      !m.IsStatic
+      &&
+      (
+        m.GetParameters().Length == 0
+        ||
+        m.GetParameters().All(p => p.IsOptional)
+        ||
+        isSingleParamsArgument(m.GetParameters())
+      )
+      &&
+      !m.Name.StartsWith("get_")
+  ))
+  {
+    #>if (input is <#= method.DeclaringType.Name #> /* && typeof(<#= method.ReturnType.FullName #>) != outputType */)
+    {
+      <# if (method.ReturnType.IsValueType) { #>
+      <#= method.ReturnType.FullName #>? result = new <#= method.ReturnType.FullName #>?();
+      <# } else { #>
+      <#= method.ReturnType.FullName #> result = null;
+      <# } #>
+      try {
+        // invoke in the hope it yields something useful down the line
+        <# if (method.Name.StartsWith("get_"))
+      { #>
+        result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name.Substring(4) #>;
+        <# }
+      else
+      { #>
+        result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name #>();
+        <# } #>
+          <#
+          var cookie = new MethodCallCookie(
+            method,
+            new object[]{}
+          );
+          #>
+
+          
+      } catch { /* cannot reasonably handle this */}
+
+      <# if (method.ReturnType.IsValueType) { #>
+      if (result.HasValue && !Equals(result.Value, input))
+      {
+        foreach (var c in FindCandidates(result.Value, output, depth+1,
+          string.Format("<#= cookie.ToString() #>", callChain)))
+        {
+          yield return c;
+        }
+      }
+      <# } else { #>
+      if (result != null && !Equals(result, input))
+      {
+        foreach (var c in FindCandidates(result, output, depth+1,
+          string.Format("<#= cookie.ToString() #>", callChain)))
+        {
+          yield return c;
+        }
+      }
+      <# } #>
+
+    }
+    <#
+  }
+    #>
+  }
+  }
+}
     }
   }
 }
@@ -267,6 +563,8 @@ namespace CallSharp
             string s = (string) arg;
             if (s.Length == 0)
               sb.Append("string.Empty");
+            else if (s.StartsWith("{") && s.EndsWith("}"))
+              sb.Append(arg);
             else
               sb.AppendFormat("\"{0}\"", arg);
           }
