@@ -51,7 +51,7 @@
       </Span>
     </TextBlock>
 
-    <Label Grid.Row="2" Grid.Column="0">Expected output:</Label>
+    <Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right">Expected output:</Label>
     <me:MagicTextBox Grid.Column="1" Grid.Row="2" 
              FontFamily="{StaticResource theFont}" Margin="3"
              Text="{Binding Path=OutputText, UpdateSourceTrigger=PropertyChanged}"/>

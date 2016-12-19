@@ -6,7 +6,7 @@ namespace Tests
   [TestFixture]
   public class BasicMatchTests
   {
-    private static readonly IMemberDatabase mdb = new DynamicMemberDatabase();
+    private static readonly IMemberDatabase mdb = new StaticMemberDatabase();
 
     [Test, Category(Categories.LongRunning)]
     [TestCase("foo   ", "foo", "input.TrimEnd()")]

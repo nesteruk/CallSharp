@@ -1,4 +1,6 @@
-﻿namespace CallSharp
+﻿using System.Text;
+
+namespace CallSharp
 {
   using System;
   using System.CodeDom;
@@ -12,10 +14,34 @@
 
   public static class ExtensionMethods
   {
-	  public static bool False(this string s)
-	  {
-		  return false;
-	  }
+    public static string ToLiteral(this object o)
+    {
+      if (o is Array)
+      {
+        var a = o as Array;
+        var sb = new StringBuilder();
+        sb.Append("new [] { ");
+        for (int i = 0; i < a.Length; i++)
+        {
+          sb.Append(a.GetValue(i).ToLiteral());
+          if (i + 1 != a.Length)
+            sb.Append(", ");
+        }
+        sb.Append(" }");
+        return sb.ToString();
+      }
+      if (o is string)
+      {
+        if ((o as string).Length == 0)
+          return "string.Empty";
+        return $"\"{o}\"";
+      }
+      if (o is char)
+      {
+        return $"'{o}'";
+      }
+      return o.ToString();
+    }
 
     public static string RemoveMarkers(this string s)
     {
