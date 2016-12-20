@@ -8,7 +8,11 @@ This is a self-updating app; to install it, <a href="https://github.com/nesteruk
 ## Very tentative roadmap
 
 **0.1** Initial release; search works but takes an atrocious amount of time.
+
 **0.2** Search speed improvements (static API search).
+
 ** WE ARE HERE **
+
 **0.3** Omission fixes: operators, properties, indexers, verification of constructor calls, support for generics.
+
 tbc.
