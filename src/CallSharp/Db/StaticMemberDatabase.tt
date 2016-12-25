@@ -193,11 +193,12 @@ namespace CallSharp
   using System.Diagnostics;
   using System.Collections.Generic;
 
-  class StaticMemberDatabase : IMemberDatabase
+  public class StaticMemberDatabase : IMemberDatabase
   {
     private readonly IFragmentationEngine fragEngine = new FragmentationEngine();
 
-    public IEnumerable<string> FindCandidates(object input, object output, int depth,
+    public IEnumerable<string> FindCandidates(object origin,
+      object input, object output, int depth,
       string callChain = "input")
     {
       Trace.WriteLine(callChain);
@@ -238,7 +239,7 @@ namespace CallSharp
     #>if (output is <#= ctor.DeclaringType.FullName #> && input is <#= ctor.GetParameters()[0].ParameterType.FullName #>)
     {
       var instance = new <#= ctor.DeclaringType.FullName #>((<#= ctor.GetParameters()[0].ParameterType.FullName #>)input);
-      if (instance == (<#= ctor.DeclaringType.FullName #>)output)
+      if (instance == (<#= ctor.DeclaringType.FullName #>)output && !Equals(instance,origin))
       {
         yield return $"new <#=getFriendlyName(ctor.DeclaringType)#>({callChain})";
         foundSomething = true;
@@ -270,7 +271,7 @@ namespace CallSharp
     { #>
       var result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name #>();
       <# } #>
-      if (Equals(result, output))
+      if (Equals(result, output) && !Equals(result, origin))
       {
         <#
         var cookie = new MethodCallCookie(
@@ -312,7 +313,7 @@ namespace CallSharp
       try
       {
         var result = <#= method.DeclaringType.FullName #>.<#= method.Name #>((<#= parameters[0].ParameterType.FullName #>)input);
-        if (result == (<#= method.ReturnType.FullName #>)output)
+        if (result == (<#= method.ReturnType.FullName #>)output && !Equals(result,origin))
         <#
         var cookie = new MethodCallCookie(method, new []{ "{0}" });
         #>
@@ -349,7 +350,9 @@ namespace CallSharp
         try {
           result = ((<#= method.DeclaringType.FullName #>)input).<#= method.Name #>((<#= method.GetParameters()[0].ParameterType.FullName #>)arg);
         } catch {}
-        if (<#= resultAvailableCheck(method.ReturnType) #> && <#= resultMatchesOutput(method.ReturnType) #>)
+        if (<#= resultAvailableCheck(method.ReturnType) #> 
+            && <#= resultMatchesOutput(method.ReturnType) #>
+            && <#= resultIsNotOrigin(method.ReturnType) #>)
         {
           <#
           var cookie = new MethodCallCookie(method, new object []{"{1}"});
@@ -446,18 +449,18 @@ namespace CallSharp
       } catch { /* cannot reasonably handle this */}
 
       <# if (method.ReturnType.IsValueType) { #>
-      if (result.HasValue && !Equals(result.Value, input))
+      if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        foreach (var c in FindCandidates(result.Value, output, depth+1,
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
           string.Format("<#= cookie.ToString() #>", callChain)))
         {
           yield return c;
         }
       }
       <# } else { #>
-      if (result != null && !Equals(result, input))
+      if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        foreach (var c in FindCandidates(result, output, depth+1,
+        foreach (var c in FindCandidates(origin, result, output, depth+1,
           string.Format("<#= cookie.ToString() #>", callChain)))
         {
           foundSomething = true;
@@ -498,7 +501,7 @@ namespace CallSharp
        if (<#= resultCheck(method.ReturnType) #>)
        {
          <# MethodCallCookie cookie = new MethodCallCookie(method, new object[]{}); 
-         #>foreach (var c in FindCandidates(result<#= valueIfNeeded(method.ReturnType) #>, output, depth+1,
+         #>foreach (var c in FindCandidates(origin, result<#= valueIfNeeded(method.ReturnType) #>, output, depth+1,
            string.Format("<#= cookie.ToString() #>", callChain)))
          {
            foundSomething = true;
@@ -542,6 +545,12 @@ namespace CallSharp
   {
     if (type.IsValueType) return $"result.Value == (({type.FullName})output)";
     else return $"result == ({type.FullName})output";
+  }
+
+  string resultIsNotOrigin(Type type)
+  {
+    if (type.IsValueType) return $"!Equals(result.Value, origin)";
+    else return $"!Equals(result, origin)";
   }
 
   string resultCheck(Type type)

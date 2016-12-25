@@ -167,7 +167,7 @@ namespace CallSharp
       Candidates.Clear();
       
       Task.Factory.StartNew(() =>
-        dynamicMemberDatabase.FindCandidates(parsedInputValue, parsedOutputValue, 0))
+        dynamicMemberDatabase.FindCandidates(parsedInputValue,parsedInputValue, parsedOutputValue, 0))
         .ContinueWith(task =>
         {
           foreach (var x in task.Result) Candidates.Add(x);

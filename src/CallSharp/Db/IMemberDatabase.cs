@@ -6,6 +6,6 @@ namespace CallSharp
 {
   public interface IMemberDatabase
   {
-    IEnumerable<string> FindCandidates(object input, object output, int depth, string callChain = "input");
+    IEnumerable<string> FindCandidates(object origin, object input, object output, int depth, string callChain = "input");
   }
 }
