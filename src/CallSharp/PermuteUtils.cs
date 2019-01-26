@@ -2,7 +2,7 @@
 
 namespace CallSharp
 {
-  public class PermuteUtils
+  public static class PermuteUtils
   {
     // Returns an enumeration of enumerators, one for each permutation
     // of the input.

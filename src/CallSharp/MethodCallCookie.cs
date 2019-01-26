@@ -62,15 +62,14 @@ namespace CallSharp
         sb.Append(MethodCalled.Name).Append("(");
 
         int start = MethodCalled.IsStatic ? 1 : 0;
-        for (int i = start; i < Arguments.Length; i++)
+        for (var i = start; i < Arguments.Length; i++)
         {
           var arg = Arguments[i];
           bool isParams = methodParams[i].IsParams();
           
           // caveat: calling a params[] really passes in a single
           // 0-sized array :( need special handling
-          var arr = arg as Array;
-          if (arr != null && arr.Length == 0)
+          if (arg is Array arr && arr.Length == 0)
             break;
 
           // todo: literalize argument into code
@@ -84,16 +83,20 @@ namespace CallSharp
           }
           else if (arg is char[])
           {
-            if (!isParams) sb.Append("new char[]{");
+            if (!isParams) 
+              sb.Append("new char[]{");
+            
             sb.Append(string.Join(",", ((char[]) arg).Select(c => "'" + c + "'")));
-            if (!isParams) sb.Append("}");
+            
+            if (!isParams) 
+              sb.Append("}");
           }
           else
           {
             sb.Append(arg);
           }
 
-          if (i+1 != Arguments.Length)
+          if (i + 1 != Arguments.Length)
             sb.Append(", ");
         }
 

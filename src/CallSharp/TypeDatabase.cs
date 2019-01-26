@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace CallSharp
 {
   static class TypeDatabase
   {
-    
     private static readonly HashSet<Type> signedIntegralTypes = new HashSet<Type>
     {
       typeof(int),
@@ -38,13 +38,23 @@ namespace CallSharp
       typeof(TimeSpan)
     };
 
-    // todo: simply search for those types which have Parse()
-    public static HashSet<Type> ParseableTypes = new HashSet<Type>(integralTypes
-      .Prepend(typeof(bool))
-      .Concat(floatingPointTypes)
-      .Concat(dateTimeTypes)
-      .Append(typeof(char))
-      .Append(typeof(string)));
+    // finds all types from `mscorlib` that contains TryParse<T>(string, out T) method
+    /*public static Dictionary<Type, MethodInfo> ParseableTypes = Assembly.Load("mscorlib").GetTypes()
+                                                                        .ToDictionary(m => m, t => t.GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                                                                                    .FirstOrDefault(m => m.Name == "TryParse" && m.GetParameters().Length == 2))
+                                                                        .Where(pair => pair.Value != null && pair.Key.FullName != "System.Enum")
+                                                                        .ToDictionary(pair => pair.Key, pair => pair.Value);*/
+
+    
+    //all types from `mscorlib` that contains TryParse<T>(string, out T) method
+    public static readonly Dictionary<Type, MethodInfo> ParseableTypesDict = integralTypes
+     .Prepend(typeof(bool))
+     .Concat(floatingPointTypes)
+     .Concat(dateTimeTypes).Append(typeof(char))
+     /*.Append(typeof(string))*/.ToDictionary(t => t,
+       t => t.GetMethods(BindingFlags.Static | BindingFlags.Public)
+             .FirstOrDefault(m => m.Name == "TryParse" && 
+                                  m.GetParameters().Length == 2));
 
     public static HashSet<Type> SequenceTypes = new HashSet<Type>
     {
@@ -52,8 +62,8 @@ namespace CallSharp
       typeof(List<>)
     };
 
-    public static HashSet<Type> CoreTypes = new HashSet<Type>( 
-      ParseableTypes
+    public static readonly HashSet<Type> CoreTypes = new HashSet<Type>( 
+      ParseableTypesDict.Keys
       .Append(typeof(Enumerable))
       .Append(typeof(Math)));
   }

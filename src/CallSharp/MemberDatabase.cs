@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -80,7 +81,8 @@ namespace CallSharp
         && (
           m.DeclaringType.IsIn(TypeDatabase.CoreTypes)
           ||
-          m.DeclaringType.Name.Contains("IEnumerable") // hack ;(
+          m.DeclaringType.GetInterfaces().Any(i => i.IsGenericType && // no more hack ;)
+                                                   i.GetGenericTypeDefinition() == typeof(IEnumerable<>))
         )
         && m.ReturnType != ignoreThisOutputType
         && m.IsStatic))
@@ -222,7 +224,7 @@ namespace CallSharp
       foreach (var m in FindOneToOneNonStatic(input.GetType(), output.GetType()))
       {
         var cookie = m.InvokeWithNoArgument(input);
-        if (cookie != null && output.Equals(cookie?.ReturnValue))
+        if (cookie != null && output.Equals(cookie.ReturnValue))
         {
           yield return cookie.ToString(callChain);
           foundSomething = true;
