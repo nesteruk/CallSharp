@@ -209,15 +209,15 @@ namespace CallSharp
     
 
     [Pure]
-    public IEnumerable<string> FindCandidates(object origin, object input, object output, int depth, string callChain = "input")
+    public void FindCandidates(Action<string> visitor, object origin, object input, object output, int depth, string callChain = "input")
     {
       Trace.WriteLine(callChain);
 
       // if inputs are completely identical, we have no further work to do
       if (input.Equals(output))
       {
-        yield return callChain;
-        yield break;
+        visitor(callChain);
+        return;
       }
 
       // here we try to brute-force conversion of input to output
@@ -229,8 +229,8 @@ namespace CallSharp
       } catch (Exception) { }
       if (input.Equals(newValue))
       {
-        yield return callChain;
-        yield break;
+        visitor(callChain);
+        return;
       }
 
       bool foundSomething = false;
@@ -245,7 +245,7 @@ namespace CallSharp
         object instance = ctor.Invoke(new[] { input });
         if (instance.Equals(output))
         {
-          yield return $"new {ctor.ReflectedType.GetFriendlyName()}({callChain})";
+          visitor($"new {ctor.ReflectedType.GetFriendlyName()}({callChain})");
           foundSomething = true;
         }
       }
@@ -255,7 +255,7 @@ namespace CallSharp
         var cookie = m.InvokeWithNoArgument(input);
         if (cookie != null && output.Equals(cookie.ReturnValue))
         {
-          yield return cookie.ToString(callChain);
+          visitor(cookie.ToString(callChain));
           foundSomething = true;
         }
         else
@@ -272,7 +272,7 @@ namespace CallSharp
         {
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            yield return cookie.ToString(callChain);
+            visitor(cookie.ToString(callChain));
             foundSomething = true;
           }
         }
@@ -295,7 +295,7 @@ namespace CallSharp
             {
               if (cookie != null && !Equals(cookie.ReturnValue, input))
               {
-                yield return cookie.ToString(callChain);
+                visitor(cookie.ToString(callChain));
                 foundSomething = true;
               }
             }
@@ -321,7 +321,7 @@ namespace CallSharp
             {
               if (cookie != null && !Equals(cookie.ReturnValue, input))
               {
-                yield return cookie.ToString(callChain);
+                visitor(cookie.ToString(callChain));
                 //foundSomething = true;
               }
             }
@@ -332,6 +332,12 @@ namespace CallSharp
           }
         }
       }
+
+      Action<string> visitorWithCheck = x =>
+      {
+        visitor(x);
+        foundSomething = true;
+      };
 
       // assuming we haven't found things and not in too deep
       if (!foundSomething && depth < 2)
@@ -345,12 +351,7 @@ namespace CallSharp
           // pass it on
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            foreach (var c in
-              FindCandidates(origin, cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain)))
-            {
-              yield return c;
-              foundSomething = true;
-            }
+            FindCandidates(visitorWithCheck, origin, cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain));
           }
         }
 
@@ -361,22 +362,14 @@ namespace CallSharp
           var cookie = m.InvokeStaticWithSingleArgument(input);
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            foreach (var c in FindCandidates(origin, cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain)))
-            {
-              yield return c;
-              foundSomething = true;
-            }
+            FindCandidates(visitorWithCheck, origin, cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain));
           }
         }
 
         // we already have call results for some invocation chains, why not try those?
         foreach (var fc in failCookies.Where(fc => fc != null && !Equals(fc.ReturnValue, input)))
         {
-          foreach (var с in FindCandidates(origin, fc.ReturnValue, output, depth + 1, fc.ToString(callChain)))
-          {
-            yield return с;
-            foundSomething = true;
-          }
+          FindCandidates(visitorWithCheck, origin, fc.ReturnValue, output, depth + 1, fc.ToString(callChain));
         }
       }
     }

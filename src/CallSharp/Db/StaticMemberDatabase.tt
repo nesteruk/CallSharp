@@ -192,12 +192,15 @@ namespace CallSharp
   using System;
   using System.Diagnostics;
   using System.Collections.Generic;
+  using System.Threading.Tasks;
 
   public class StaticMemberDatabase : IMemberDatabase
   {
     private readonly IFragmentationEngine fragEngine = new FragmentationEngine();
 
-    public IEnumerable<string> FindCandidates(object origin,
+    public void FindCandidates(
+      Action<string> visitor,
+      object origin,
       object input, object output, int depth,
       string callChain = "input")
     {
@@ -208,8 +211,8 @@ namespace CallSharp
 
 	    if (input.Equals(output))
       {
-        yield return callChain;
-        yield break;
+        visitor(callChain);
+        return;
       }
 
 	    // here we try to brute-force conversion of input to output
@@ -221,11 +224,17 @@ namespace CallSharp
       } catch (Exception) { }
       if (input.Equals(newValue))
       {
-        yield return callChain;
-        yield break;
+        visitor(callChain);
+        return;
       }
 
 	    bool foundSomething = false;
+
+      Action<string> visitorWithCheck = x =>
+      {
+        visitor(x);
+        foundSomething = true;
+      };
 
 	    // contains all calls that didn't yield the right result
       var failCookies = new List<MethodCallCookie>();
@@ -241,8 +250,7 @@ namespace CallSharp
       var instance = new <#= ctor.DeclaringType.FullName #>((<#= ctor.GetParameters()[0].ParameterType.FullName #>)input);
       if (instance == (<#= ctor.DeclaringType.FullName #>)output && !Equals(instance,origin))
       {
-        yield return $"new <#=getFriendlyName(ctor.DeclaringType)#>({callChain})";
-        foundSomething = true;
+        visitorWithCheck($"new <#=getFriendlyName(ctor.DeclaringType)#>({callChain})");
       }
     }
     <#
@@ -260,6 +268,7 @@ namespace CallSharp
     )))
   { // TODO: group by in/out pairs
     #>
+    Task.Factory.StartNew(() => {
     if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -279,10 +288,10 @@ namespace CallSharp
           new object[]{}
         );
         #>
-        foundSomething = true;
-        yield return string.Format("<#= cookie.ToString() #>", callChain);
+        visitorWithCheck(string.Format("<#= cookie.ToString() #>", callChain));
       }
     }
+    });
     <#
   }
   #>
@@ -306,6 +315,7 @@ namespace CallSharp
     // ensure input type is convertible to first parameter
     // todo: ensure we are avoiding ref/out
     #>
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(<#= parameters[0].ParameterType.FullName #>)) &&
         typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
     {
@@ -320,8 +330,9 @@ namespace CallSharp
           retVal = string.Format("<#= cookie.ToString() #>", callChain);
       }
       catch {}
-      if (retVal != null) yield return retVal;
+      if (retVal != null) visitor(retVal);
     }
+    });
     <#
   }
   #>
@@ -341,7 +352,7 @@ namespace CallSharp
   {
     // check in-out
     // todo: get fragmentations first for each type
-    #>foreach (var arg in fragEngine.Frag(input, typeof(<#= method.GetParameters()[0].ParameterType.FullName #>)))
+    #>Parallel.ForEach (fragEngine.Frag(input, typeof(<#= method.GetParameters()[0].ParameterType.FullName #>)), arg => {
     {
       if (input is <#= method.DeclaringType.Name #> 
           && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
@@ -356,12 +367,13 @@ namespace CallSharp
         {
           <#
           var cookie = new MethodCallCookie(method, new object []{"{1}"});
-          #>foundSomething = true;
-          yield return string.Format("<#= cookie.ToString() #>", callChain, 
-            arg.ToLiteral());
+          #>
+          visitorWithCheck(string.Format("<#= cookie.ToString() #>", callChain, 
+            arg.ToLiteral()));
         }
       }
     }
+    });
     <#
   }
   #>
@@ -400,9 +412,8 @@ namespace CallSharp
         {
           <#
           var cookie = new MethodCallCookie(method, new object []{"{1}", "{2}"});
-          #>foundSomething = true;
-          yield return string.Format("<#= cookie.ToString() #>", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral());
+          #>visitorWithCheck(string.Format("<#= cookie.ToString() #>", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
         }
       }
     }
@@ -454,21 +465,14 @@ namespace CallSharp
       <# if (method.ReturnType.IsValueType) { #>
       if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("<#= cookie.ToString() #>", callChain)))
-        {
-          yield return c;
-        }
+        FindCandidates(visitor, origin, result.Value, output, depth+1,
+          string.Format("<#= cookie.ToString() #>", callChain));
       }
       <# } else { #>
       if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("<#= cookie.ToString() #>", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+          string.Format("<#= cookie.ToString() #>", callChain));
       }
       <# } #>
 
@@ -505,12 +509,8 @@ namespace CallSharp
        if (<#= resultCheck(method.ReturnType) #>)
        {
          <# MethodCallCookie cookie = new MethodCallCookie(method, new object[]{}); 
-         #>foreach (var c in FindCandidates(origin, result<#= valueIfNeeded(method.ReturnType) #>, output, depth+1,
-           string.Format("<#= cookie.ToString() #>", callChain)))
-         {
-           foundSomething = true;
-           yield return c;
-         }
+         #>FindCandidates(visitorWithCheck, origin, result<#= valueIfNeeded(method.ReturnType) #>, output, depth+1,
+           string.Format("<#= cookie.ToString() #>", callChain));
        }
      }
 

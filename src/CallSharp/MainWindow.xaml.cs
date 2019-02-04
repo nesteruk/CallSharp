@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
+using System.Text;
+using System.Threading;
 
 namespace CallSharp
 {
@@ -14,20 +16,45 @@ namespace CallSharp
     private readonly IMemberDatabase dynamicMemberDatabase = new StaticMemberDatabase();
     private static object[] noArgs = { };
 
+    private const string defaultPrimaryRunText = "Search!";
+    private const string defaultSecondaryRunText = "may take a long time";
+
+    public string PrimaryRunLabel
+    {
+      get { return (string)GetValue(PrimaryRunLabelProperty); }
+      set { SetValue(PrimaryRunLabelProperty, value); }
+    }
+    public static readonly DependencyProperty PrimaryRunLabelProperty =
+        DependencyProperty.Register("PrimaryRunLabel", typeof(string), typeof(MainWindow), new PropertyMetadata(defaultPrimaryRunText));
+
+
+
+    public string SecondaryRunLabel
+    {
+      get { return (string)GetValue(SecondaryRunLabelProperty); }
+      set { SetValue(SecondaryRunLabelProperty, value); }
+    }
+
+    public static readonly DependencyProperty SecondaryRunLabelProperty =
+        DependencyProperty.Register("SecondaryRunLabel", typeof(string), typeof(MainWindow), new PropertyMetadata(defaultSecondaryRunText));
+
+
+
     public ObservableHashSet<string> Candidates
     {
-      get { return (ObservableHashSet<string>)GetValue(CandidatesProperty); }
-      set { SetValue(CandidatesProperty, value); }
+      get => (ObservableHashSet<string>)GetValue(CandidatesProperty);
+      set => SetValue(CandidatesProperty, value);
     }
 
     public static readonly DependencyProperty CandidatesProperty =
         DependencyProperty.Register("Candidates", typeof(ObservableHashSet<string>), typeof(MainWindow),
           new PropertyMetadata(new ObservableHashSet<string>()));
 
+
     public string InputText
     {
-      get { return (string) GetValue(InputTextProperty); }
-      set { SetValue(InputTextProperty, value); }
+      get => (string) GetValue(InputTextProperty);
+      set => SetValue(InputTextProperty, value);
     }
 
     public static readonly DependencyProperty InputTextProperty =
@@ -35,8 +62,8 @@ namespace CallSharp
 
     public Type InputType
     {
-      get { return (Type)GetValue(InputTypeProperty); }
-      set { SetValue(InputTypeProperty, value); }
+      get => (Type)GetValue(InputTypeProperty);
+      set => SetValue(InputTypeProperty, value);
     }
 
     public static readonly DependencyProperty InputTypeProperty =
@@ -44,8 +71,8 @@ namespace CallSharp
 
     public Type OutputType
     {
-      get { return (Type)GetValue(OutputTypeProperty); }
-      set { SetValue(OutputTypeProperty, value); }
+      get => (Type)GetValue(OutputTypeProperty);
+      set => SetValue(OutputTypeProperty, value);
     }
 
     public static readonly DependencyProperty OutputTypeProperty =
@@ -55,8 +82,8 @@ namespace CallSharp
 
     public bool? ScaleWindow
     {
-      get { return (bool?)GetValue(ScaleWindowProperty); }
-      set { SetValue(ScaleWindowProperty, value); }
+      get => (bool?)GetValue(ScaleWindowProperty);
+      set => SetValue(ScaleWindowProperty, value);
     }
 
     // Using a DependencyProperty as the backing store for ScaleWindow.  This enables animation, styling, binding, etc...
@@ -79,9 +106,9 @@ namespace CallSharp
         self.AlternateInputValues.Inlines.Clear();
         foreach (var i in parsedValues)
         {
-          if (!Equals(self.InputType, i.GetType()))
+          if (self.InputType != i.GetType())
           {
-            Hyperlink h = new Hyperlink();
+            var h = new Hyperlink();
             h.Inlines.Add(i.GetType().GetFriendlyName());
             h.Tag = i;
             h.Click += (sender, args) =>
@@ -107,8 +134,8 @@ namespace CallSharp
 
     public string OutputText
     {
-      get { return (string)GetValue(OutputTextProperty); }
-      set { SetValue(OutputTextProperty, value); }
+      get => (string)GetValue(OutputTextProperty);
+      set => SetValue(OutputTextProperty, value);
     }
 
     public static readonly DependencyProperty OutputTextProperty =
@@ -165,12 +192,18 @@ namespace CallSharp
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
       Candidates.Clear();
+
+      PrimaryRunLabel = "Cancel";
+      SecondaryRunLabel = "search in progress";
       
       Task.Factory.StartNew(() =>
-        dynamicMemberDatabase.FindCandidates(parsedInputValue,parsedInputValue, parsedOutputValue, 0))
-        .ContinueWith(task =>
+        dynamicMemberDatabase.FindCandidates(
+          x => Dispatcher.Invoke(() => Candidates.Add(x)),
+          parsedInputValue,parsedInputValue, parsedOutputValue, 0))
+        .ContinueWith(t =>
         {
-          foreach (var x in task.Result) Candidates.Add(x);
+          PrimaryRunLabel = defaultPrimaryRunText;
+          SecondaryRunLabel = "search complete";
         }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 

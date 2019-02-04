@@ -69,9 +69,9 @@
               x:Name="BtnSearch" Click="BtnSearch_OnClick"
               HorizontalContentAlignment="Center">
         <TextBlock TextAlignment="Center">
-          <Run>Search!</Run>
+          <Run Text="{Binding PrimaryRunLabel, Mode=TwoWay}"/>
           <LineBreak/>
-          <Run FontSize="{StaticResource smallFontSize}">may take a really long time</Run>
+          <Run FontSize="{StaticResource smallFontSize}" Text="{Binding SecondaryRunLabel, Mode=TwoWay}"/>
         </TextBlock>
       </Button>
       <Button Height="50" Margin="3" VerticalAlignment="Top"
