@@ -388,6 +388,16 @@ namespace CallSharp
         yield return string.Format("{0}.Year", callChain);
       }
     }
+        if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).ToString();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                foundSomething = true;
+        yield return string.Format("{0}.ToString()", callChain);
+      }
+    }
         if (input is DateTime && typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -566,16 +576,6 @@ namespace CallSharp
       {
                 foundSomething = true;
         yield return string.Format("{0}.ToShortTimeString()", callChain);
-      }
-    }
-        if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).ToString();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                foundSomething = true;
-        yield return string.Format("{0}.ToString()", callChain);
       }
     }
         if (input is DateTime && typeof(System.DateTime).IsConvertibleTo(outputType))
@@ -2686,7 +2686,7 @@ namespace CallSharp
       if (retVal != null) yield return retVal;
     }
       // 4. Single-argument fragmentation (1-to-2 instance)
-  if (true || !foundSomething)
+  if (!foundSomething)
   {
     foreach (var arg in fragEngine.Frag(input, typeof(System.Object)))
     {
@@ -3106,6 +3106,44 @@ namespace CallSharp
         }
       }
     }
+    foreach (var arg in fragEngine.Frag(input, typeof(System.String)))
+    {
+      if (input is DateTime 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.DateTime)input).ToString((System.String)arg);
+        } catch {}
+        if (result != null 
+            && result == (System.String)output
+            && !Equals(result, origin))
+        {
+          foundSomething = true;
+          yield return string.Format("{0}.ToString({1})", callChain, 
+            arg.ToLiteral());
+        }
+      }
+    }
+    foreach (var arg in fragEngine.Frag(input, typeof(System.IFormatProvider)))
+    {
+      if (input is DateTime 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.DateTime)input).ToString((System.IFormatProvider)arg);
+        } catch {}
+        if (result != null 
+            && result == (System.String)output
+            && !Equals(result, origin))
+        {
+          foundSomething = true;
+          yield return string.Format("{0}.ToString({1})", callChain, 
+            arg.ToLiteral());
+        }
+      }
+    }
     foreach (var arg in fragEngine.Frag(input, typeof(System.TimeSpan)))
     {
       if (input is DateTime 
@@ -3387,44 +3425,6 @@ namespace CallSharp
         {
           foundSomething = true;
           yield return string.Format("{0}.Subtract({1})", callChain, 
-            arg.ToLiteral());
-        }
-      }
-    }
-    foreach (var arg in fragEngine.Frag(input, typeof(System.String)))
-    {
-      if (input is DateTime 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.DateTime)input).ToString((System.String)arg);
-        } catch {}
-        if (result != null 
-            && result == (System.String)output
-            && !Equals(result, origin))
-        {
-          foundSomething = true;
-          yield return string.Format("{0}.ToString({1})", callChain, 
-            arg.ToLiteral());
-        }
-      }
-    }
-    foreach (var arg in fragEngine.Frag(input, typeof(System.IFormatProvider)))
-    {
-      if (input is DateTime 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.DateTime)input).ToString((System.IFormatProvider)arg);
-        } catch {}
-        if (result != null 
-            && result == (System.String)output
-            && !Equals(result, origin))
-        {
-          foundSomething = true;
-          yield return string.Format("{0}.ToString({1})", callChain, 
             arg.ToLiteral());
         }
       }
@@ -5084,7 +5084,7 @@ namespace CallSharp
     }
     
     // 5. Two-argument fragmentation; like the above but with quad the complexity.
-    if (true || !foundSomething)
+    if (!foundSomething)
   {
     
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
@@ -5846,9 +5846,10 @@ namespace CallSharp
     
   // 5. Assuming we found nothing and aren't in too deep (any-to-1), look for
   //    methods which do NOT yield outputType
-  if (/* !foundSomething && */ depth < 2)
+  if (!foundSomething && depth < 2)
   {
-    if (input is String && typeof(System.Char[]) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Char[]) != outputType)
     {
       System.Char[] result = null;
       try {
@@ -5868,7 +5869,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.Int32) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -5887,7 +5889,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.Int32) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -5906,7 +5909,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String[]) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String[]) != outputType)
     {
       System.String[] result = null;
       try {
@@ -5926,7 +5930,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -5946,7 +5951,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -5966,7 +5972,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -5986,7 +5993,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.Boolean) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Boolean) != outputType)
     {
       System.Boolean? result = new System.Boolean?();
       try {
@@ -6005,7 +6013,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6025,7 +6034,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6045,7 +6055,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6065,7 +6076,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6085,7 +6097,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6105,7 +6118,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6125,27 +6139,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.Object) == outputType)
-    {
-      System.Object result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).Clone();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("{0}.Clone()", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is String && typeof(System.String) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6165,7 +6160,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.TypeCode) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -6184,7 +6180,8 @@ namespace CallSharp
       }
       
     }
-    if (input is String && typeof(System.CharEnumerator) == outputType)
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.CharEnumerator) != outputType)
     {
       System.CharEnumerator result = null;
       try {
@@ -6204,7 +6201,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -6224,7 +6222,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Int32) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6243,7 +6242,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Int32) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6262,7 +6262,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Int32) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6281,7 +6282,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Int32) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6300,7 +6302,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Int32) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6319,7 +6322,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Int32) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6338,353 +6342,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.Boolean) == outputType)
-    {
-      System.Boolean? result = new System.Boolean?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).IsDaylightSavingTime();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.IsDaylightSavingTime()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int64) == outputType)
-    {
-      System.Int64? result = new System.Int64?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToBinary();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.ToBinary()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.DateTime) == outputType)
-    {
-      System.DateTime? result = new System.DateTime?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Date;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.Date", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.DayOfWeek) == outputType)
-    {
-      System.DayOfWeek? result = new System.DayOfWeek?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).DayOfWeek;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.DayOfWeek", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int32) == outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).DayOfYear;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.DayOfYear", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int32) == outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).GetHashCode();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.GetHashCode()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.DateTimeKind) == outputType)
-    {
-      System.DateTimeKind? result = new System.DateTimeKind?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Kind;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.Kind", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int32) == outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Millisecond;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.Millisecond", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int64) == outputType)
-    {
-      System.Int64? result = new System.Int64?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Ticks;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.Ticks", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.TimeSpan) == outputType)
-    {
-      System.TimeSpan? result = new System.TimeSpan?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).TimeOfDay;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.TimeOfDay", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Double) == outputType)
-    {
-      System.Double? result = new System.Double?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToOADate();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.ToOADate()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int64) == outputType)
-    {
-      System.Int64? result = new System.Int64?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToFileTime();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.ToFileTime()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.Int64) == outputType)
-    {
-      System.Int64? result = new System.Int64?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToFileTimeUtc();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.ToFileTimeUtc()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.DateTime) == outputType)
-    {
-      System.DateTime? result = new System.DateTime?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToLocalTime();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
-          string.Format("{0}.ToLocalTime()", callChain)))
-        {
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.String) == outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToLongDateString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("{0}.ToLongDateString()", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.String) == outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToLongTimeString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("{0}.ToLongTimeString()", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.String) == outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToShortDateString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("{0}.ToShortDateString()", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.String) == outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToShortTimeString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("{0}.ToShortTimeString()", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
-      }
-      
-    }
-    if (input is DateTime && typeof(System.String) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6704,7 +6363,372 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.DateTime) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Boolean) != outputType)
+    {
+      System.Boolean? result = new System.Boolean?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).IsDaylightSavingTime();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.IsDaylightSavingTime()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int64) != outputType)
+    {
+      System.Int64? result = new System.Int64?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToBinary();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.ToBinary()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DateTime) != outputType)
+    {
+      System.DateTime? result = new System.DateTime?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Date;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.Date", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DayOfWeek) != outputType)
+    {
+      System.DayOfWeek? result = new System.DayOfWeek?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).DayOfWeek;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.DayOfWeek", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).DayOfYear;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.DayOfYear", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).GetHashCode();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.GetHashCode()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DateTimeKind) != outputType)
+    {
+      System.DateTimeKind? result = new System.DateTimeKind?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Kind;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.Kind", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Millisecond;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.Millisecond", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int64) != outputType)
+    {
+      System.Int64? result = new System.Int64?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Ticks;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.Ticks", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.TimeSpan) != outputType)
+    {
+      System.TimeSpan? result = new System.TimeSpan?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).TimeOfDay;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.TimeOfDay", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Double) != outputType)
+    {
+      System.Double? result = new System.Double?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToOADate();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.ToOADate()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int64) != outputType)
+    {
+      System.Int64? result = new System.Int64?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToFileTime();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.ToFileTime()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int64) != outputType)
+    {
+      System.Int64? result = new System.Int64?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToFileTimeUtc();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.ToFileTimeUtc()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DateTime) != outputType)
+    {
+      System.DateTime? result = new System.DateTime?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToLocalTime();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
+          string.Format("{0}.ToLocalTime()", callChain)))
+        {
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToLongDateString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        foreach (var c in FindCandidates(origin, result, output, depth+1,
+          string.Format("{0}.ToLongDateString()", callChain)))
+        {
+          foundSomething = true;
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToLongTimeString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        foreach (var c in FindCandidates(origin, result, output, depth+1,
+          string.Format("{0}.ToLongTimeString()", callChain)))
+        {
+          foundSomething = true;
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToShortDateString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        foreach (var c in FindCandidates(origin, result, output, depth+1,
+          string.Format("{0}.ToShortDateString()", callChain)))
+        {
+          foundSomething = true;
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToShortTimeString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        foreach (var c in FindCandidates(origin, result, output, depth+1,
+          string.Format("{0}.ToShortTimeString()", callChain)))
+        {
+          foundSomething = true;
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DateTime) != outputType)
     {
       System.DateTime? result = new System.DateTime?();
       try {
@@ -6723,7 +6747,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.String[]) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String[]) != outputType)
     {
       System.String[] result = null;
       try {
@@ -6743,7 +6768,8 @@ namespace CallSharp
       }
       
     }
-    if (input is DateTime && typeof(System.TypeCode) == outputType)
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -6762,7 +6788,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -6782,7 +6809,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Boolean && typeof(System.Int32) == outputType)
+     // recursive invocation on Boolean happening here!
+	if (input is Boolean && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6801,7 +6829,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Boolean && typeof(System.String) == outputType)
+     // recursive invocation on Boolean happening here!
+	if (input is Boolean && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6821,7 +6850,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Boolean && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Boolean happening here!
+	if (input is Boolean && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -6840,7 +6870,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -6860,7 +6891,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Byte && typeof(System.Int32) == outputType)
+     // recursive invocation on Byte happening here!
+	if (input is Byte && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6879,7 +6911,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Byte && typeof(System.String) == outputType)
+     // recursive invocation on Byte happening here!
+	if (input is Byte && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6899,7 +6932,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Byte && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Byte happening here!
+	if (input is Byte && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -6918,7 +6952,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -6938,7 +6973,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Char && typeof(System.Int32) == outputType)
+     // recursive invocation on Char happening here!
+	if (input is Char && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -6957,7 +6993,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Char && typeof(System.String) == outputType)
+     // recursive invocation on Char happening here!
+	if (input is Char && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -6977,7 +7014,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Char && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Char happening here!
+	if (input is Char && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -6996,7 +7034,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7016,7 +7055,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Decimal && typeof(System.Int32) == outputType)
+     // recursive invocation on Decimal happening here!
+	if (input is Decimal && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7035,7 +7075,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Decimal && typeof(System.String) == outputType)
+     // recursive invocation on Decimal happening here!
+	if (input is Decimal && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7055,7 +7096,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Decimal && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Decimal happening here!
+	if (input is Decimal && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7074,7 +7116,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7094,7 +7137,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Double && typeof(System.Int32) == outputType)
+     // recursive invocation on Double happening here!
+	if (input is Double && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7113,7 +7157,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Double && typeof(System.String) == outputType)
+     // recursive invocation on Double happening here!
+	if (input is Double && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7133,7 +7178,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Double && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Double happening here!
+	if (input is Double && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7152,7 +7198,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7172,7 +7219,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int16 && typeof(System.Int32) == outputType)
+     // recursive invocation on Int16 happening here!
+	if (input is Int16 && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7191,7 +7239,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int16 && typeof(System.String) == outputType)
+     // recursive invocation on Int16 happening here!
+	if (input is Int16 && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7211,7 +7260,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int16 && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Int16 happening here!
+	if (input is Int16 && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7230,7 +7280,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7250,7 +7301,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int32 && typeof(System.Int32) == outputType)
+     // recursive invocation on Int32 happening here!
+	if (input is Int32 && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7269,7 +7321,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int32 && typeof(System.String) == outputType)
+     // recursive invocation on Int32 happening here!
+	if (input is Int32 && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7289,7 +7342,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int32 && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Int32 happening here!
+	if (input is Int32 && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7308,7 +7362,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7328,7 +7383,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int64 && typeof(System.Int32) == outputType)
+     // recursive invocation on Int64 happening here!
+	if (input is Int64 && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7347,7 +7403,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int64 && typeof(System.String) == outputType)
+     // recursive invocation on Int64 happening here!
+	if (input is Int64 && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7367,7 +7424,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Int64 && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Int64 happening here!
+	if (input is Int64 && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7386,7 +7444,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7406,7 +7465,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.String) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7426,7 +7486,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Int32) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7445,7 +7506,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7465,7 +7527,8 @@ namespace CallSharp
       }
       
     }
-    if (input is SByte && typeof(System.String) == outputType)
+     // recursive invocation on SByte happening here!
+	if (input is SByte && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7485,7 +7548,8 @@ namespace CallSharp
       }
       
     }
-    if (input is SByte && typeof(System.Int32) == outputType)
+     // recursive invocation on SByte happening here!
+	if (input is SByte && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7504,7 +7568,8 @@ namespace CallSharp
       }
       
     }
-    if (input is SByte && typeof(System.TypeCode) == outputType)
+     // recursive invocation on SByte happening here!
+	if (input is SByte && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7523,7 +7588,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7543,7 +7609,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Single && typeof(System.Int32) == outputType)
+     // recursive invocation on Single happening here!
+	if (input is Single && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7562,7 +7629,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Single && typeof(System.String) == outputType)
+     // recursive invocation on Single happening here!
+	if (input is Single && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7582,7 +7650,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Single && typeof(System.TypeCode) == outputType)
+     // recursive invocation on Single happening here!
+	if (input is Single && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7601,7 +7670,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7621,7 +7691,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int64) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int64) != outputType)
     {
       System.Int64? result = new System.Int64?();
       try {
@@ -7640,7 +7711,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int32) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7659,7 +7731,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int32) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7678,7 +7751,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int32) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7697,7 +7771,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int32) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7716,7 +7791,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int32) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7735,7 +7811,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Double) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Double) != outputType)
     {
       System.Double? result = new System.Double?();
       try {
@@ -7754,7 +7831,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Double) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Double) != outputType)
     {
       System.Double? result = new System.Double?();
       try {
@@ -7773,7 +7851,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Double) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Double) != outputType)
     {
       System.Double? result = new System.Double?();
       try {
@@ -7792,7 +7871,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Double) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Double) != outputType)
     {
       System.Double? result = new System.Double?();
       try {
@@ -7811,7 +7891,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Double) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Double) != outputType)
     {
       System.Double? result = new System.Double?();
       try {
@@ -7830,7 +7911,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.TimeSpan) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.TimeSpan) != outputType)
     {
       System.TimeSpan? result = new System.TimeSpan?();
       try {
@@ -7849,7 +7931,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.Int32) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7868,7 +7951,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.TimeSpan) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.TimeSpan) != outputType)
     {
       System.TimeSpan? result = new System.TimeSpan?();
       try {
@@ -7887,7 +7971,8 @@ namespace CallSharp
       }
       
     }
-    if (input is TimeSpan && typeof(System.String) == outputType)
+     // recursive invocation on TimeSpan happening here!
+	if (input is TimeSpan && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7907,7 +7992,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -7927,7 +8013,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt16 && typeof(System.Int32) == outputType)
+     // recursive invocation on UInt16 happening here!
+	if (input is UInt16 && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -7946,7 +8033,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt16 && typeof(System.String) == outputType)
+     // recursive invocation on UInt16 happening here!
+	if (input is UInt16 && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -7966,7 +8054,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt16 && typeof(System.TypeCode) == outputType)
+     // recursive invocation on UInt16 happening here!
+	if (input is UInt16 && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -7985,7 +8074,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -8005,7 +8095,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt32 && typeof(System.Int32) == outputType)
+     // recursive invocation on UInt32 happening here!
+	if (input is UInt32 && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -8024,7 +8115,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt32 && typeof(System.String) == outputType)
+     // recursive invocation on UInt32 happening here!
+	if (input is UInt32 && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -8044,7 +8136,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt32 && typeof(System.TypeCode) == outputType)
+     // recursive invocation on UInt32 happening here!
+	if (input is UInt32 && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -8063,7 +8156,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -8083,7 +8177,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt64 && typeof(System.Int32) == outputType)
+     // recursive invocation on UInt64 happening here!
+	if (input is UInt64 && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -8102,7 +8197,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt64 && typeof(System.String) == outputType)
+     // recursive invocation on UInt64 happening here!
+	if (input is UInt64 && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -8122,7 +8218,8 @@ namespace CallSharp
       }
       
     }
-    if (input is UInt64 && typeof(System.TypeCode) == outputType)
+     // recursive invocation on UInt64 happening here!
+	if (input is UInt64 && typeof(System.TypeCode) != outputType)
     {
       System.TypeCode? result = new System.TypeCode?();
       try {
@@ -8141,7 +8238,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -8161,7 +8259,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.String) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.String) != outputType)
     {
       System.String result = null;
       try {
@@ -8181,7 +8280,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Int32) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
       try {
@@ -8200,7 +8300,8 @@ namespace CallSharp
       }
       
     }
-    if (input is Object && typeof(System.Type) == outputType)
+     // recursive invocation on Object happening here!
+	if (input is Object && typeof(System.Type) != outputType)
     {
       System.Type result = null;
       try {
@@ -8223,6 +8324,7 @@ namespace CallSharp
     
     // 6. Look for similar, but static calls. Here we go again.
          
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8242,6 +8344,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8261,6 +8364,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.String result = null;
@@ -8280,6 +8384,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Object))
      {
        System.String result = null;
@@ -8299,6 +8404,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Object[]))
      {
        System.String result = null;
@@ -8318,6 +8424,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String[]))
      {
        System.String result = null;
@@ -8337,6 +8444,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.String result = null;
@@ -8356,6 +8464,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.String result = null;
@@ -8375,6 +8484,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.DateTime? result = new System.DateTime?();
@@ -8394,6 +8504,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.DateTime? result = new System.DateTime?();
@@ -8413,6 +8524,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.DateTime? result = new System.DateTime?();
@@ -8432,6 +8544,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.DateTime? result = new System.DateTime?();
@@ -8451,6 +8564,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int32))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8470,6 +8584,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.DateTime? result = new System.DateTime?();
@@ -8489,6 +8604,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8508,6 +8624,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Byte? result = new System.Byte?();
@@ -8527,6 +8644,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Char? result = new System.Char?();
@@ -8546,6 +8664,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.String result = null;
@@ -8565,6 +8684,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Char? result = new System.Char?();
@@ -8584,6 +8704,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8603,6 +8724,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8622,6 +8744,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8641,6 +8764,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8660,6 +8784,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8679,6 +8804,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8698,6 +8824,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8717,6 +8844,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Char? result = new System.Char?();
@@ -8736,6 +8864,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Char? result = new System.Char?();
@@ -8755,6 +8884,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Char? result = new System.Char?();
@@ -8774,6 +8904,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8793,6 +8924,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8812,6 +8944,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8831,6 +8964,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8850,6 +8984,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8869,6 +9004,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Globalization.UnicodeCategory? result = new System.Globalization.UnicodeCategory?();
@@ -8888,6 +9024,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Double? result = new System.Double?();
@@ -8907,6 +9044,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8926,6 +9064,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Char))
      {
        System.Boolean? result = new System.Boolean?();
@@ -8945,6 +9084,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int32))
      {
        System.String result = null;
@@ -8964,6 +9104,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Int64? result = new System.Int64?();
@@ -8983,6 +9124,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9002,6 +9144,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9021,6 +9164,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9040,6 +9184,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9059,6 +9204,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Int32[] result = null;
@@ -9078,6 +9224,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9097,6 +9244,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9116,6 +9264,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Byte? result = new System.Byte?();
@@ -9135,6 +9284,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.SByte? result = new System.SByte?();
@@ -9154,6 +9304,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Int16? result = new System.Int16?();
@@ -9173,6 +9324,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Double? result = new System.Double?();
@@ -9192,6 +9344,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Int32? result = new System.Int32?();
@@ -9211,6 +9364,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Int64? result = new System.Int64?();
@@ -9230,6 +9384,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.UInt16? result = new System.UInt16?();
@@ -9249,6 +9404,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.UInt32? result = new System.UInt32?();
@@ -9268,6 +9424,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.UInt64? result = new System.UInt64?();
@@ -9287,6 +9444,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Single? result = new System.Single?();
@@ -9306,6 +9464,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9325,6 +9484,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Boolean? result = new System.Boolean?();
@@ -9344,6 +9504,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Boolean? result = new System.Boolean?();
@@ -9363,6 +9524,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Boolean? result = new System.Boolean?();
@@ -9382,6 +9544,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Boolean? result = new System.Boolean?();
@@ -9401,6 +9564,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Double? result = new System.Double?();
@@ -9420,6 +9584,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Int16? result = new System.Int16?();
@@ -9439,6 +9604,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Int32? result = new System.Int32?();
@@ -9458,6 +9624,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Int64? result = new System.Int64?();
@@ -9477,6 +9644,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9496,6 +9664,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9515,6 +9684,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9534,6 +9704,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9553,6 +9724,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9572,6 +9744,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9591,6 +9764,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9610,6 +9784,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9629,6 +9804,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9648,6 +9824,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9667,6 +9844,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9686,6 +9864,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9705,6 +9884,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9724,6 +9904,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9743,6 +9924,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9762,6 +9944,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -9781,6 +9964,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9800,6 +9984,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9819,6 +10004,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9838,6 +10024,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9857,6 +10044,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9876,6 +10064,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.SByte))
      {
        System.SByte? result = new System.SByte?();
@@ -9895,6 +10084,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int16))
      {
        System.Int16? result = new System.Int16?();
@@ -9914,6 +10104,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int32))
      {
        System.Int32? result = new System.Int32?();
@@ -9933,6 +10124,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.Int64? result = new System.Int64?();
@@ -9952,6 +10144,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Single))
      {
        System.Single? result = new System.Single?();
@@ -9971,6 +10164,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Double? result = new System.Double?();
@@ -9990,6 +10184,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Decimal? result = new System.Decimal?();
@@ -10009,6 +10204,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.SByte))
      {
        System.Int32? result = new System.Int32?();
@@ -10028,6 +10224,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int16))
      {
        System.Int32? result = new System.Int32?();
@@ -10047,6 +10244,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int32))
      {
        System.Int32? result = new System.Int32?();
@@ -10066,6 +10264,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.Int32? result = new System.Int32?();
@@ -10085,6 +10284,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Single))
      {
        System.Int32? result = new System.Int32?();
@@ -10104,6 +10304,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.Int32? result = new System.Int32?();
@@ -10123,6 +10324,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Decimal))
      {
        System.Int32? result = new System.Int32?();
@@ -10142,6 +10344,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.SByte? result = new System.SByte?();
@@ -10161,6 +10364,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Single))
      {
        System.Boolean? result = new System.Boolean?();
@@ -10180,6 +10384,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Single))
      {
        System.Boolean? result = new System.Boolean?();
@@ -10199,6 +10404,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Single))
      {
        System.Boolean? result = new System.Boolean?();
@@ -10218,6 +10424,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Single))
      {
        System.Boolean? result = new System.Boolean?();
@@ -10237,6 +10444,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.Single? result = new System.Single?();
@@ -10256,6 +10464,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10275,6 +10484,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10294,6 +10504,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10313,6 +10524,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10332,6 +10544,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Double))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10351,6 +10564,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.Int64))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10370,6 +10584,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.TimeSpan? result = new System.TimeSpan?();
@@ -10389,6 +10604,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.UInt16? result = new System.UInt16?();
@@ -10408,6 +10624,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.UInt32? result = new System.UInt32?();
@@ -10427,6 +10644,7 @@ namespace CallSharp
      }
 
           
+	 // static recursive check
      if (inputType == typeof(System.String))
      {
        System.UInt64? result = new System.UInt64?();

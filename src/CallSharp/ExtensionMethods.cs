@@ -181,19 +181,14 @@ namespace CallSharp
     {
       var result = new List<object>();
 
-      foreach (var type in TypeDatabase.ParseableTypes)
+      foreach (var m in TypeDatabase.ParseableTypesDict.Values)
       {
-        foreach (var m in type.GetMethods().Where(
-          x => x.Name.Equals("TryParse")
-               && x.GetParameters().Length == 2))
+        // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
+        object[] pars = { text, null };
+        bool ok = (bool) m.Invoke(null, pars);
+        if (ok)
         {
-          // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
-          object[] pars = { text, null };
-          bool ok = (bool)m.Invoke(null, pars);
-          if (ok)
-          {
             result.Add(pars[1]);
-          }
         }
       }
 
