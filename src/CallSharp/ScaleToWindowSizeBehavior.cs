@@ -33,12 +33,10 @@ namespace CallSharp
       FrameworkElement mainElement = target as FrameworkElement;
       MainWindow window = e.NewValue as MainWindow;
 
-	    ScaleTransform scaleTransform = new ScaleTransform
-	    {
-		    CenterX = 0,
-		    CenterY = 0
-	    };
-	    Binding scaleValueBinding = new Binding
+      ScaleTransform scaleTransform = new ScaleTransform();
+      scaleTransform.CenterX = 0;
+      scaleTransform.CenterY = 0;
+      Binding scaleValueBinding = new Binding
       {
         Source = window,
         Path = new PropertyPath(ScaleValueProperty)
@@ -74,15 +72,14 @@ namespace CallSharp
 
     private static object OnCoerceScaleValue(DependencyObject d, object baseValue)
     {
-      if (baseValue is double)
+      if (baseValue is double doubleValue)
       {
-        double value = (double) baseValue;
-        if (double.IsNaN(value))
+        if (double.IsNaN(doubleValue))
         {
           return 1.0f;
         }
-        value = Math.Max(0.1, value);
-        return value;
+        doubleValue = Math.Max(0.1, doubleValue);
+        return doubleValue;
       }
       return 1.0f;
     }

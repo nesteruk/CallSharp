@@ -49,5 +49,9 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyFileVersion("0.2.0.0")]
+[assembly: AssemblyVersion("0.2.1.0")]
+[assembly: AssemblyFileVersion("0.2.1.0")]
+
+// 0.2.1 changes:
+// - Removed identity calls (e.g., input.ToUpper().ToLower())
+//   (only takes care of origin-matching since storing the entire chain might be expensive)

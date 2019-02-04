@@ -18,19 +18,19 @@
     typeof(long),
     typeof(short),
     typeof(sbyte),
-	  typeof(uint),
+	typeof(uint),
     typeof(ulong),
     typeof(ushort),
     typeof(byte),
     typeof(bool),
-	  typeof(float),
+	typeof(float),
     typeof(double),
     typeof(decimal),
-	  typeof(DateTime),
+	typeof(DateTime),
     typeof(TimeSpan),
     typeof(char),
     typeof(string),
-	  typeof(Enumerable),
+	typeof(Enumerable),
     typeof(Math)
   };
 
@@ -326,7 +326,7 @@ namespace CallSharp
   }
   #>
   // 4. Single-argument fragmentation (1-to-2 instance)
-  if (true || !foundSomething)
+  if (!foundSomething)
   {
     <#
       int numberOfNonOptionalArguments = 1;
@@ -367,7 +367,7 @@ namespace CallSharp
   #>
 
     // 5. Two-argument fragmentation; like the above but with quad the complexity.
-    if (true || !foundSomething)
+    if (!foundSomething)
   {
     
     <#
@@ -412,7 +412,7 @@ namespace CallSharp
 
   // 5. Assuming we found nothing and aren't in too deep (any-to-1), look for
   //    methods which do NOT yield outputType
-  if (/* !foundSomething && */ depth < 2)
+  if (!foundSomething && depth < 2)
   {
     <#
   foreach (var method in allMethods.Where(m =>
@@ -425,9 +425,12 @@ namespace CallSharp
         ||
         isSingleParamsArgument(m.GetParameters())
       )
+	  &&
+	  m.ReturnType != typeof(System.Object)
   ))
   {
-    #>if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.ReturnType.FullName #>) == outputType)
+    #> // recursive invocation on <#= method.DeclaringType.Name #> happening here!
+	if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.ReturnType.FullName #>) != outputType)
     {
       <#= resultDeclaration(method.ReturnType) #>
       try {
@@ -491,6 +494,7 @@ namespace CallSharp
       var paramTypeName = method.GetParameters()[0].ParameterType.FullName;
      #>
      
+	 // static recursive check
      if (inputType == typeof(<#= paramTypeName #>))
      {
        <#= resultDeclaration(method.ReturnType) #>

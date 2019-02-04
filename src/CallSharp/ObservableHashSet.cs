@@ -81,11 +81,7 @@ namespace CallSharp
     /// <summary>
     /// Gets the IEqualityComparer&lt;T&gt; object that is used to determine equality for the values in the set.
     /// </summary>
-    public IEqualityComparer<T> Comparer
-    {
-      get { return hashSet.Comparer; }
-    }
-
+    public IEqualityComparer<T> Comparer => hashSet.Comparer;
 
     /// <summary>
     /// Gets the number of elements contained in the <see cref="ObservableHashSet&lt;T&gt;"/>.
@@ -93,22 +89,16 @@ namespace CallSharp
     /// <returns>
     /// The number of elements contained in the <see cref="ObservableHashSet&lt;T&gt;"/>.
     ///   </returns>
-    public int Count
-    {
-      get { return hashSet.Count; }
-    }
+    public int Count => hashSet.Count;
 
     /// <summary>
     /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
     /// </summary>
     /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only; otherwise, false.
     ///   </returns>
-    bool ICollection<T>.IsReadOnly
-    {
-      get { return ((ICollection<T>)hashSet).IsReadOnly; }
-    }
+    bool ICollection<T>.IsReadOnly => ((ICollection<T>)hashSet).IsReadOnly;
 
-    #endregion
+  #endregion
 
     #region Events
 
@@ -135,10 +125,7 @@ namespace CallSharp
 
     private void RaisePropertyChanged(string propertyName)
     {
-      if (PropertyChanged != null)
-      {
-        PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-      }
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     #endregion
