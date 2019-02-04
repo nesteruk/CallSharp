@@ -192,31 +192,31 @@ namespace CallSharp
         }
       }
 
-      // try to decompose and see if it makes sense
-      var commaSeparated = text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-      if (commaSeparated.Length > 1)
-      {
-        // does every separated part parse under this model
-        foreach (var type in TypeDatabase.ParseableTypes)
-        {
-          foreach (var m in type.GetMethods().Where(
-            x => x.Name.Equals("TryParse")
-                 && x.GetParameters().Length == 2))
-          {
-            // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
+      //// try to decompose and see if it makes sense
+      //var commaSeparated = text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+      //if (commaSeparated.Length > 1)
+      //{
+      //  // does every separated part parse under this model
+      //  foreach (var type in TypeDatabase.ParseableTypes)
+      //  {
+      //    foreach (var m in type.GetMethods().Where(
+      //      x => x.Name.Equals("TryParse")
+      //           && x.GetParameters().Length == 2))
+      //    {
+      //      // see http://stackoverflow.com/questions/569249/methodinfo-invoke-with-out-parameter
 
-            // parse on every argument
-            var ok = commaSeparated.Select(part => (bool) m.Invoke(null,
-              new object[] {part, null}));
+      //      // parse on every argument
+      //      var ok = commaSeparated.Select(part => (bool) m.Invoke(null,
+      //        new object[] {part, null}));
 
-            if (ok.All(x=>x))
-            {
-              //result.Add(pars[1]);
-              result.Add(typeof(List<>).MakeGenericType(type));
-            }
-          }
-        }
-      }
+      //      if (ok.All(x=>x))
+      //      {
+      //        //result.Add(pars[1]);
+      //        result.Add(typeof(List<>).MakeGenericType(type));
+      //      }
+      //    }
+      //  }
+      //}
 
       return result;
     }

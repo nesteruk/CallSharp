@@ -546,9 +546,11 @@ namespace CallSharp
   }
 
   string resultMatchesOutput(Type type)
-  {
-    if (type.IsValueType) return $"result.Value == (({type.FullName})output)";
-    else return $"result == ({type.FullName})output";
+  { 
+    // keep in mind that our evaluation might simply yield an incompatible type
+    var valueIfRequired = type.IsValueType ? ".Value" : "";
+    var typeGuard = $"output.GetType() == typeof({type.FullName}) && ";
+    return $"{typeGuard}result{valueIfRequired}.Equals(({type.FullName})output)";
   }
 
   string resultIsNotOrigin(Type type)

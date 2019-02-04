@@ -388,16 +388,6 @@ namespace CallSharp
         yield return string.Format("{0}.Year", callChain);
       }
     }
-        if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).ToString();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                foundSomething = true;
-        yield return string.Format("{0}.ToString()", callChain);
-      }
-    }
         if (input is DateTime && typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -576,6 +566,16 @@ namespace CallSharp
       {
                 foundSomething = true;
         yield return string.Format("{0}.ToShortTimeString()", callChain);
+      }
+    }
+        if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).ToString();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                foundSomething = true;
+        yield return string.Format("{0}.ToString()", callChain);
       }
     }
         if (input is DateTime && typeof(System.DateTime).IsConvertibleTo(outputType))
@@ -2698,7 +2698,7 @@ namespace CallSharp
           result = ((System.String)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2717,7 +2717,7 @@ namespace CallSharp
           result = ((System.String)input).Equals((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2736,7 +2736,7 @@ namespace CallSharp
           result = ((System.String)input).Substring((System.Int32)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -2755,7 +2755,7 @@ namespace CallSharp
           result = ((System.String)input).IsNormalized((System.Text.NormalizationForm)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2774,7 +2774,7 @@ namespace CallSharp
           result = ((System.String)input).Normalize((System.Text.NormalizationForm)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -2793,7 +2793,7 @@ namespace CallSharp
           result = ((System.String)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2812,7 +2812,7 @@ namespace CallSharp
           result = ((System.String)input).CompareTo((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2831,7 +2831,7 @@ namespace CallSharp
           result = ((System.String)input).Contains((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2850,7 +2850,7 @@ namespace CallSharp
           result = ((System.String)input).EndsWith((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2869,7 +2869,7 @@ namespace CallSharp
           result = ((System.String)input).IndexOf((System.Char)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2888,7 +2888,7 @@ namespace CallSharp
           result = ((System.String)input).IndexOfAny((System.Char[])arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2907,7 +2907,7 @@ namespace CallSharp
           result = ((System.String)input).IndexOf((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2926,7 +2926,7 @@ namespace CallSharp
           result = ((System.String)input).LastIndexOf((System.Char)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2945,7 +2945,7 @@ namespace CallSharp
           result = ((System.String)input).LastIndexOfAny((System.Char[])arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2964,7 +2964,7 @@ namespace CallSharp
           result = ((System.String)input).LastIndexOf((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -2983,7 +2983,7 @@ namespace CallSharp
           result = ((System.String)input).PadLeft((System.Int32)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3002,7 +3002,7 @@ namespace CallSharp
           result = ((System.String)input).PadRight((System.Int32)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3021,7 +3021,7 @@ namespace CallSharp
           result = ((System.String)input).StartsWith((System.String)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3040,7 +3040,7 @@ namespace CallSharp
           result = ((System.String)input).ToLower((System.Globalization.CultureInfo)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3059,7 +3059,7 @@ namespace CallSharp
           result = ((System.String)input).ToUpper((System.Globalization.CultureInfo)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3078,7 +3078,7 @@ namespace CallSharp
           result = ((System.String)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3097,49 +3097,11 @@ namespace CallSharp
           result = ((System.String)input).Remove((System.Int32)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
           yield return string.Format("{0}.Remove({1})", callChain, 
-            arg.ToLiteral());
-        }
-      }
-    }
-    foreach (var arg in fragEngine.Frag(input, typeof(System.String)))
-    {
-      if (input is DateTime 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.DateTime)input).ToString((System.String)arg);
-        } catch {}
-        if (result != null 
-            && result == (System.String)output
-            && !Equals(result, origin))
-        {
-          foundSomething = true;
-          yield return string.Format("{0}.ToString({1})", callChain, 
-            arg.ToLiteral());
-        }
-      }
-    }
-    foreach (var arg in fragEngine.Frag(input, typeof(System.IFormatProvider)))
-    {
-      if (input is DateTime 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.DateTime)input).ToString((System.IFormatProvider)arg);
-        } catch {}
-        if (result != null 
-            && result == (System.String)output
-            && !Equals(result, origin))
-        {
-          foundSomething = true;
-          yield return string.Format("{0}.ToString({1})", callChain, 
             arg.ToLiteral());
         }
       }
@@ -3154,7 +3116,7 @@ namespace CallSharp
           result = ((System.DateTime)input).Add((System.TimeSpan)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3173,7 +3135,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddDays((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3192,7 +3154,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddHours((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3211,7 +3173,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddMilliseconds((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3230,7 +3192,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddMinutes((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3249,7 +3211,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddMonths((System.Int32)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3268,7 +3230,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddSeconds((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3287,7 +3249,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddTicks((System.Int64)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3306,7 +3268,7 @@ namespace CallSharp
           result = ((System.DateTime)input).AddYears((System.Int32)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3325,7 +3287,7 @@ namespace CallSharp
           result = ((System.DateTime)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3344,7 +3306,7 @@ namespace CallSharp
           result = ((System.DateTime)input).CompareTo((System.DateTime)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3363,7 +3325,7 @@ namespace CallSharp
           result = ((System.DateTime)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3382,7 +3344,7 @@ namespace CallSharp
           result = ((System.DateTime)input).Equals((System.DateTime)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3401,7 +3363,7 @@ namespace CallSharp
           result = ((System.DateTime)input).Subtract((System.DateTime)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.TimeSpan)output)
+            && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3420,11 +3382,49 @@ namespace CallSharp
           result = ((System.DateTime)input).Subtract((System.TimeSpan)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.DateTime)output)
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
           yield return string.Format("{0}.Subtract({1})", callChain, 
+            arg.ToLiteral());
+        }
+      }
+    }
+    foreach (var arg in fragEngine.Frag(input, typeof(System.String)))
+    {
+      if (input is DateTime 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.DateTime)input).ToString((System.String)arg);
+        } catch {}
+        if (result != null 
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
+            && !Equals(result, origin))
+        {
+          foundSomething = true;
+          yield return string.Format("{0}.ToString({1})", callChain, 
+            arg.ToLiteral());
+        }
+      }
+    }
+    foreach (var arg in fragEngine.Frag(input, typeof(System.IFormatProvider)))
+    {
+      if (input is DateTime 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.DateTime)input).ToString((System.IFormatProvider)arg);
+        } catch {}
+        if (result != null 
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
+            && !Equals(result, origin))
+        {
+          foundSomething = true;
+          yield return string.Format("{0}.ToString({1})", callChain, 
             arg.ToLiteral());
         }
       }
@@ -3439,7 +3439,7 @@ namespace CallSharp
           result = ((System.DateTime)input).GetDateTimeFormats((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String[])output
+            && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3458,7 +3458,7 @@ namespace CallSharp
           result = ((System.DateTime)input).GetDateTimeFormats((System.Char)arg);
         } catch {}
         if (result != null 
-            && result == (System.String[])output
+            && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3477,7 +3477,7 @@ namespace CallSharp
           result = ((System.Boolean)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3496,7 +3496,7 @@ namespace CallSharp
           result = ((System.Boolean)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3515,7 +3515,7 @@ namespace CallSharp
           result = ((System.Boolean)input).Equals((System.Boolean)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3534,7 +3534,7 @@ namespace CallSharp
           result = ((System.Boolean)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3553,7 +3553,7 @@ namespace CallSharp
           result = ((System.Boolean)input).CompareTo((System.Boolean)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3572,7 +3572,7 @@ namespace CallSharp
           result = ((System.Byte)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3591,7 +3591,7 @@ namespace CallSharp
           result = ((System.Byte)input).CompareTo((System.Byte)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3610,7 +3610,7 @@ namespace CallSharp
           result = ((System.Byte)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3629,7 +3629,7 @@ namespace CallSharp
           result = ((System.Byte)input).Equals((System.Byte)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3648,7 +3648,7 @@ namespace CallSharp
           result = ((System.Byte)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3667,7 +3667,7 @@ namespace CallSharp
           result = ((System.Byte)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3686,7 +3686,7 @@ namespace CallSharp
           result = ((System.Char)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3705,7 +3705,7 @@ namespace CallSharp
           result = ((System.Char)input).Equals((System.Char)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3724,7 +3724,7 @@ namespace CallSharp
           result = ((System.Char)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3743,7 +3743,7 @@ namespace CallSharp
           result = ((System.Char)input).CompareTo((System.Char)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3762,7 +3762,7 @@ namespace CallSharp
           result = ((System.Char)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3781,7 +3781,7 @@ namespace CallSharp
           result = ((System.Decimal)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3800,7 +3800,7 @@ namespace CallSharp
           result = ((System.Decimal)input).CompareTo((System.Decimal)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3819,7 +3819,7 @@ namespace CallSharp
           result = ((System.Decimal)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3838,7 +3838,7 @@ namespace CallSharp
           result = ((System.Decimal)input).Equals((System.Decimal)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3857,7 +3857,7 @@ namespace CallSharp
           result = ((System.Decimal)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3876,7 +3876,7 @@ namespace CallSharp
           result = ((System.Decimal)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3895,7 +3895,7 @@ namespace CallSharp
           result = ((System.Double)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3914,7 +3914,7 @@ namespace CallSharp
           result = ((System.Double)input).CompareTo((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3933,7 +3933,7 @@ namespace CallSharp
           result = ((System.Double)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3952,7 +3952,7 @@ namespace CallSharp
           result = ((System.Double)input).Equals((System.Double)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -3971,7 +3971,7 @@ namespace CallSharp
           result = ((System.Double)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -3990,7 +3990,7 @@ namespace CallSharp
           result = ((System.Double)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4009,7 +4009,7 @@ namespace CallSharp
           result = ((System.Int16)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4028,7 +4028,7 @@ namespace CallSharp
           result = ((System.Int16)input).CompareTo((System.Int16)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4047,7 +4047,7 @@ namespace CallSharp
           result = ((System.Int16)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4066,7 +4066,7 @@ namespace CallSharp
           result = ((System.Int16)input).Equals((System.Int16)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4085,7 +4085,7 @@ namespace CallSharp
           result = ((System.Int16)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4104,7 +4104,7 @@ namespace CallSharp
           result = ((System.Int16)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4123,7 +4123,7 @@ namespace CallSharp
           result = ((System.Int32)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4142,7 +4142,7 @@ namespace CallSharp
           result = ((System.Int32)input).CompareTo((System.Int32)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4161,7 +4161,7 @@ namespace CallSharp
           result = ((System.Int32)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4180,7 +4180,7 @@ namespace CallSharp
           result = ((System.Int32)input).Equals((System.Int32)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4199,7 +4199,7 @@ namespace CallSharp
           result = ((System.Int32)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4218,7 +4218,7 @@ namespace CallSharp
           result = ((System.Int32)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4237,7 +4237,7 @@ namespace CallSharp
           result = ((System.Int64)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4256,7 +4256,7 @@ namespace CallSharp
           result = ((System.Int64)input).CompareTo((System.Int64)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4275,7 +4275,7 @@ namespace CallSharp
           result = ((System.Int64)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4294,7 +4294,7 @@ namespace CallSharp
           result = ((System.Int64)input).Equals((System.Int64)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4313,7 +4313,7 @@ namespace CallSharp
           result = ((System.Int64)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4332,7 +4332,7 @@ namespace CallSharp
           result = ((System.Int64)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4351,7 +4351,7 @@ namespace CallSharp
           result = ((System.Object)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4370,7 +4370,7 @@ namespace CallSharp
           result = ((System.SByte)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4389,7 +4389,7 @@ namespace CallSharp
           result = ((System.SByte)input).CompareTo((System.SByte)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4408,7 +4408,7 @@ namespace CallSharp
           result = ((System.SByte)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4427,7 +4427,7 @@ namespace CallSharp
           result = ((System.SByte)input).Equals((System.SByte)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4446,7 +4446,7 @@ namespace CallSharp
           result = ((System.SByte)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4465,7 +4465,7 @@ namespace CallSharp
           result = ((System.SByte)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4484,7 +4484,7 @@ namespace CallSharp
           result = ((System.Single)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4503,7 +4503,7 @@ namespace CallSharp
           result = ((System.Single)input).CompareTo((System.Single)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4522,7 +4522,7 @@ namespace CallSharp
           result = ((System.Single)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4541,7 +4541,7 @@ namespace CallSharp
           result = ((System.Single)input).Equals((System.Single)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4560,7 +4560,7 @@ namespace CallSharp
           result = ((System.Single)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4579,7 +4579,7 @@ namespace CallSharp
           result = ((System.Single)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4598,7 +4598,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).Add((System.TimeSpan)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.TimeSpan)output)
+            && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4617,7 +4617,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4636,7 +4636,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).CompareTo((System.TimeSpan)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4655,7 +4655,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4674,7 +4674,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).Equals((System.TimeSpan)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4693,7 +4693,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).Subtract((System.TimeSpan)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.TimeSpan)output)
+            && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4712,7 +4712,7 @@ namespace CallSharp
           result = ((System.TimeSpan)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4731,7 +4731,7 @@ namespace CallSharp
           result = ((System.UInt16)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4750,7 +4750,7 @@ namespace CallSharp
           result = ((System.UInt16)input).CompareTo((System.UInt16)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4769,7 +4769,7 @@ namespace CallSharp
           result = ((System.UInt16)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4788,7 +4788,7 @@ namespace CallSharp
           result = ((System.UInt16)input).Equals((System.UInt16)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4807,7 +4807,7 @@ namespace CallSharp
           result = ((System.UInt16)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4826,7 +4826,7 @@ namespace CallSharp
           result = ((System.UInt16)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4845,7 +4845,7 @@ namespace CallSharp
           result = ((System.UInt32)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4864,7 +4864,7 @@ namespace CallSharp
           result = ((System.UInt32)input).CompareTo((System.UInt32)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4883,7 +4883,7 @@ namespace CallSharp
           result = ((System.UInt32)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4902,7 +4902,7 @@ namespace CallSharp
           result = ((System.UInt32)input).Equals((System.UInt32)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4921,7 +4921,7 @@ namespace CallSharp
           result = ((System.UInt32)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4940,7 +4940,7 @@ namespace CallSharp
           result = ((System.UInt32)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -4959,7 +4959,7 @@ namespace CallSharp
           result = ((System.UInt64)input).CompareTo((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4978,7 +4978,7 @@ namespace CallSharp
           result = ((System.UInt64)input).CompareTo((System.UInt64)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Int32)output)
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -4997,7 +4997,7 @@ namespace CallSharp
           result = ((System.UInt64)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -5016,7 +5016,7 @@ namespace CallSharp
           result = ((System.UInt64)input).Equals((System.UInt64)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -5035,7 +5035,7 @@ namespace CallSharp
           result = ((System.UInt64)input).ToString((System.IFormatProvider)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -5054,7 +5054,7 @@ namespace CallSharp
           result = ((System.UInt64)input).ToString((System.String)arg);
         } catch {}
         if (result != null 
-            && result == (System.String)output
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
             && !Equals(result, origin))
         {
           foundSomething = true;
@@ -5073,7 +5073,7 @@ namespace CallSharp
           result = ((System.Object)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
-            && result.Value == ((System.Boolean)output)
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
             && !Equals(result.Value, origin))
         {
           foundSomething = true;
@@ -5100,7 +5100,7 @@ namespace CallSharp
             (System.StringComparison)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Boolean)output))
+        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Equals({1}, {2})", callChain, 
@@ -5121,7 +5121,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result != null && result == (System.Char[])output)
+        if (result != null && output.GetType() == typeof(System.Char[]) && result.Equals((System.Char[])output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToCharArray({1}, {2})", callChain, 
@@ -5142,7 +5142,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result != null && result == (System.String[])output)
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Split({1}, {2})", callChain, 
@@ -5163,7 +5163,7 @@ namespace CallSharp
             (System.StringSplitOptions)arg2
           );
         } catch {}
-        if (result != null && result == (System.String[])output)
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Split({1}, {2})", callChain, 
@@ -5184,7 +5184,7 @@ namespace CallSharp
             (System.StringSplitOptions)arg2
           );
         } catch {}
-        if (result != null && result == (System.String[])output)
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Split({1}, {2})", callChain, 
@@ -5205,7 +5205,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Substring({1}, {2})", callChain, 
@@ -5226,7 +5226,7 @@ namespace CallSharp
             (System.StringComparison)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Boolean)output))
+        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.EndsWith({1}, {2})", callChain, 
@@ -5247,7 +5247,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.IndexOf({1}, {2})", callChain, 
@@ -5268,7 +5268,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.IndexOfAny({1}, {2})", callChain, 
@@ -5289,7 +5289,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.IndexOf({1}, {2})", callChain, 
@@ -5310,7 +5310,7 @@ namespace CallSharp
             (System.StringComparison)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.IndexOf({1}, {2})", callChain, 
@@ -5331,7 +5331,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.LastIndexOf({1}, {2})", callChain, 
@@ -5352,7 +5352,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.LastIndexOfAny({1}, {2})", callChain, 
@@ -5373,7 +5373,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.LastIndexOf({1}, {2})", callChain, 
@@ -5394,7 +5394,7 @@ namespace CallSharp
             (System.StringComparison)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Int32)output))
+        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.LastIndexOf({1}, {2})", callChain, 
@@ -5415,7 +5415,7 @@ namespace CallSharp
             (System.Char)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.PadLeft({1}, {2})", callChain, 
@@ -5436,7 +5436,7 @@ namespace CallSharp
             (System.Char)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.PadRight({1}, {2})", callChain, 
@@ -5457,7 +5457,7 @@ namespace CallSharp
             (System.StringComparison)arg2
           );
         } catch {}
-        if (result.HasValue && result.Value == ((System.Boolean)output))
+        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.StartsWith({1}, {2})", callChain, 
@@ -5478,7 +5478,7 @@ namespace CallSharp
             (System.String)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Insert({1}, {2})", callChain, 
@@ -5499,7 +5499,7 @@ namespace CallSharp
             (System.Char)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Replace({1}, {2})", callChain, 
@@ -5520,7 +5520,7 @@ namespace CallSharp
             (System.String)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Replace({1}, {2})", callChain, 
@@ -5541,7 +5541,7 @@ namespace CallSharp
             (System.Int32)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.Remove({1}, {2})", callChain, 
@@ -5562,7 +5562,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5583,7 +5583,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String[])output)
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
         {
           foundSomething = true;
           yield return string.Format("{0}.GetDateTimeFormats({1}, {2})", callChain, 
@@ -5604,7 +5604,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5625,7 +5625,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5646,7 +5646,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5667,7 +5667,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5688,7 +5688,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5709,7 +5709,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5730,7 +5730,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5751,7 +5751,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5772,7 +5772,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5793,7 +5793,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5814,7 +5814,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -5835,7 +5835,7 @@ namespace CallSharp
             (System.IFormatProvider)arg2
           );
         } catch {}
-        if (result != null && result == (System.String)output)
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
         {
           foundSomething = true;
           yield return string.Format("{0}.ToString({1}, {2})", callChain, 
@@ -6343,27 +6343,6 @@ namespace CallSharp
       
     }
      // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        foreach (var c in FindCandidates(origin, result, output, depth+1,
-          string.Format("{0}.ToString()", callChain)))
-        {
-          foundSomething = true;
-          yield return c;
-        }
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
 	if (input is DateTime && typeof(System.Boolean) != outputType)
     {
       System.Boolean? result = new System.Boolean?();
@@ -6720,6 +6699,27 @@ namespace CallSharp
       {
         foreach (var c in FindCandidates(origin, result, output, depth+1,
           string.Format("{0}.ToShortTimeString()", callChain)))
+        {
+          foundSomething = true;
+          yield return c;
+        }
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        foreach (var c in FindCandidates(origin, result, output, depth+1,
+          string.Format("{0}.ToString()", callChain)))
         {
           foundSomething = true;
           yield return c;
@@ -8332,7 +8332,7 @@ namespace CallSharp
        {
          result = System.String.IsNullOrEmpty((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("string.IsNullOrEmpty({0})", callChain)))
@@ -8352,7 +8352,7 @@ namespace CallSharp
        {
          result = System.String.IsNullOrWhiteSpace((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("string.IsNullOrWhiteSpace({0})", callChain)))
@@ -8372,7 +8372,7 @@ namespace CallSharp
        {
          result = System.String.Copy((System.String)input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("string.Copy({0})", callChain)))
@@ -8392,7 +8392,7 @@ namespace CallSharp
        {
          result = System.String.Concat((System.Object)input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("string.Concat({0})", callChain)))
@@ -8412,7 +8412,7 @@ namespace CallSharp
        {
          result = System.String.Concat((System.Object[])input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("string.Concat({0})", callChain)))
@@ -8432,7 +8432,7 @@ namespace CallSharp
        {
          result = System.String.Concat((System.String[])input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("string.Concat({0})", callChain)))
@@ -8452,7 +8452,7 @@ namespace CallSharp
        {
          result = System.String.Intern((System.String)input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("string.Intern({0})", callChain)))
@@ -8472,7 +8472,7 @@ namespace CallSharp
        {
          result = System.String.IsInterned((System.String)input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("string.IsInterned({0})", callChain)))
@@ -8492,7 +8492,7 @@ namespace CallSharp
        {
          result = System.DateTime.FromBinary((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.DateTime)output))
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("DateTime.FromBinary({0})", callChain)))
@@ -8512,7 +8512,7 @@ namespace CallSharp
        {
          result = System.DateTime.FromFileTime((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.DateTime)output))
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("DateTime.FromFileTime({0})", callChain)))
@@ -8532,7 +8532,7 @@ namespace CallSharp
        {
          result = System.DateTime.FromFileTimeUtc((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.DateTime)output))
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("DateTime.FromFileTimeUtc({0})", callChain)))
@@ -8552,7 +8552,7 @@ namespace CallSharp
        {
          result = System.DateTime.FromOADate((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.DateTime)output))
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("DateTime.FromOADate({0})", callChain)))
@@ -8572,7 +8572,7 @@ namespace CallSharp
        {
          result = System.DateTime.IsLeapYear((System.Int32)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("DateTime.IsLeapYear({0})", callChain)))
@@ -8592,7 +8592,7 @@ namespace CallSharp
        {
          result = System.DateTime.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.DateTime)output))
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("DateTime.Parse({0})", callChain)))
@@ -8612,7 +8612,7 @@ namespace CallSharp
        {
          result = System.Boolean.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("bool.Parse({0})", callChain)))
@@ -8632,7 +8632,7 @@ namespace CallSharp
        {
          result = System.Byte.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Byte)output))
+       if (result.HasValue && output.GetType() == typeof(System.Byte) && result.Value.Equals((System.Byte)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("byte.Parse({0})", callChain)))
@@ -8652,7 +8652,7 @@ namespace CallSharp
        {
          result = System.Char.ToLower((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Char)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.ToLower({0})", callChain)))
@@ -8672,7 +8672,7 @@ namespace CallSharp
        {
          result = System.Char.ToString((System.Char)input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("char.ToString({0})", callChain)))
@@ -8692,7 +8692,7 @@ namespace CallSharp
        {
          result = System.Char.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Char)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.Parse({0})", callChain)))
@@ -8712,7 +8712,7 @@ namespace CallSharp
        {
          result = System.Char.IsDigit((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsDigit({0})", callChain)))
@@ -8732,7 +8732,7 @@ namespace CallSharp
        {
          result = System.Char.IsLetter((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsLetter({0})", callChain)))
@@ -8752,7 +8752,7 @@ namespace CallSharp
        {
          result = System.Char.IsWhiteSpace((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsWhiteSpace({0})", callChain)))
@@ -8772,7 +8772,7 @@ namespace CallSharp
        {
          result = System.Char.IsUpper((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsUpper({0})", callChain)))
@@ -8792,7 +8792,7 @@ namespace CallSharp
        {
          result = System.Char.IsLower((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsLower({0})", callChain)))
@@ -8812,7 +8812,7 @@ namespace CallSharp
        {
          result = System.Char.IsPunctuation((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsPunctuation({0})", callChain)))
@@ -8832,7 +8832,7 @@ namespace CallSharp
        {
          result = System.Char.IsLetterOrDigit((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsLetterOrDigit({0})", callChain)))
@@ -8852,7 +8852,7 @@ namespace CallSharp
        {
          result = System.Char.ToUpper((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Char)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.ToUpper({0})", callChain)))
@@ -8872,7 +8872,7 @@ namespace CallSharp
        {
          result = System.Char.ToUpperInvariant((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Char)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.ToUpperInvariant({0})", callChain)))
@@ -8892,7 +8892,7 @@ namespace CallSharp
        {
          result = System.Char.ToLowerInvariant((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Char)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.ToLowerInvariant({0})", callChain)))
@@ -8912,7 +8912,7 @@ namespace CallSharp
        {
          result = System.Char.IsControl((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsControl({0})", callChain)))
@@ -8932,7 +8932,7 @@ namespace CallSharp
        {
          result = System.Char.IsNumber((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsNumber({0})", callChain)))
@@ -8952,7 +8952,7 @@ namespace CallSharp
        {
          result = System.Char.IsSeparator((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsSeparator({0})", callChain)))
@@ -8972,7 +8972,7 @@ namespace CallSharp
        {
          result = System.Char.IsSurrogate((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsSurrogate({0})", callChain)))
@@ -8992,7 +8992,7 @@ namespace CallSharp
        {
          result = System.Char.IsSymbol((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsSymbol({0})", callChain)))
@@ -9012,7 +9012,7 @@ namespace CallSharp
        {
          result = System.Char.GetUnicodeCategory((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Globalization.UnicodeCategory)output))
+       if (result.HasValue && output.GetType() == typeof(System.Globalization.UnicodeCategory) && result.Value.Equals((System.Globalization.UnicodeCategory)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.GetUnicodeCategory({0})", callChain)))
@@ -9032,7 +9032,7 @@ namespace CallSharp
        {
          result = System.Char.GetNumericValue((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.GetNumericValue({0})", callChain)))
@@ -9052,7 +9052,7 @@ namespace CallSharp
        {
          result = System.Char.IsHighSurrogate((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsHighSurrogate({0})", callChain)))
@@ -9072,7 +9072,7 @@ namespace CallSharp
        {
          result = System.Char.IsLowSurrogate((System.Char)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("char.IsLowSurrogate({0})", callChain)))
@@ -9092,7 +9092,7 @@ namespace CallSharp
        {
          result = System.Char.ConvertFromUtf32((System.Int32)input);
        } catch {}
-       if (result != null && result == (System.String)output)
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("char.ConvertFromUtf32({0})", callChain)))
@@ -9112,7 +9112,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToOACurrency((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int64)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToOACurrency({0})", callChain)))
@@ -9132,7 +9132,7 @@ namespace CallSharp
        {
          result = System.Decimal.FromOACurrency((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.FromOACurrency({0})", callChain)))
@@ -9152,7 +9152,7 @@ namespace CallSharp
        {
          result = System.Decimal.Ceiling((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.Ceiling({0})", callChain)))
@@ -9172,7 +9172,7 @@ namespace CallSharp
        {
          result = System.Decimal.Floor((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.Floor({0})", callChain)))
@@ -9192,7 +9192,7 @@ namespace CallSharp
        {
          result = System.Decimal.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.Parse({0})", callChain)))
@@ -9212,7 +9212,7 @@ namespace CallSharp
        {
          result = System.Decimal.GetBits((System.Decimal)input);
        } catch {}
-       if (result != null && result == (System.Int32[])output)
+       if (result != null && output.GetType() == typeof(System.Int32[]) && result.Equals((System.Int32[])output))
        {
          foreach (var c in FindCandidates(origin, result, output, depth+1,
            string.Format("decimal.GetBits({0})", callChain)))
@@ -9232,7 +9232,7 @@ namespace CallSharp
        {
          result = System.Decimal.Negate((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.Negate({0})", callChain)))
@@ -9252,7 +9252,7 @@ namespace CallSharp
        {
          result = System.Decimal.Round((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.Round({0})", callChain)))
@@ -9272,7 +9272,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToByte((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Byte)output))
+       if (result.HasValue && output.GetType() == typeof(System.Byte) && result.Value.Equals((System.Byte)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToByte({0})", callChain)))
@@ -9292,7 +9292,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToSByte((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.SByte)output))
+       if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToSByte({0})", callChain)))
@@ -9312,7 +9312,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToInt16((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int16)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToInt16({0})", callChain)))
@@ -9332,7 +9332,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToDouble((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToDouble({0})", callChain)))
@@ -9352,7 +9352,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToInt32((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToInt32({0})", callChain)))
@@ -9372,7 +9372,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToInt64((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int64)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToInt64({0})", callChain)))
@@ -9392,7 +9392,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToUInt16((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.UInt16)output))
+       if (result.HasValue && output.GetType() == typeof(System.UInt16) && result.Value.Equals((System.UInt16)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToUInt16({0})", callChain)))
@@ -9412,7 +9412,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToUInt32((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.UInt32)output))
+       if (result.HasValue && output.GetType() == typeof(System.UInt32) && result.Value.Equals((System.UInt32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToUInt32({0})", callChain)))
@@ -9432,7 +9432,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToUInt64((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.UInt64)output))
+       if (result.HasValue && output.GetType() == typeof(System.UInt64) && result.Value.Equals((System.UInt64)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToUInt64({0})", callChain)))
@@ -9452,7 +9452,7 @@ namespace CallSharp
        {
          result = System.Decimal.ToSingle((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Single)output))
+       if (result.HasValue && output.GetType() == typeof(System.Single) && result.Value.Equals((System.Single)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.ToSingle({0})", callChain)))
@@ -9472,7 +9472,7 @@ namespace CallSharp
        {
          result = System.Decimal.Truncate((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("decimal.Truncate({0})", callChain)))
@@ -9492,7 +9492,7 @@ namespace CallSharp
        {
          result = System.Double.IsInfinity((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("double.IsInfinity({0})", callChain)))
@@ -9512,7 +9512,7 @@ namespace CallSharp
        {
          result = System.Double.IsPositiveInfinity((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("double.IsPositiveInfinity({0})", callChain)))
@@ -9532,7 +9532,7 @@ namespace CallSharp
        {
          result = System.Double.IsNegativeInfinity((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("double.IsNegativeInfinity({0})", callChain)))
@@ -9552,7 +9552,7 @@ namespace CallSharp
        {
          result = System.Double.IsNaN((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("double.IsNaN({0})", callChain)))
@@ -9572,7 +9572,7 @@ namespace CallSharp
        {
          result = System.Double.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("double.Parse({0})", callChain)))
@@ -9592,7 +9592,7 @@ namespace CallSharp
        {
          result = System.Int16.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int16)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("short.Parse({0})", callChain)))
@@ -9612,7 +9612,7 @@ namespace CallSharp
        {
          result = System.Int32.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("int.Parse({0})", callChain)))
@@ -9632,7 +9632,7 @@ namespace CallSharp
        {
          result = System.Int64.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int64)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("long.Parse({0})", callChain)))
@@ -9652,7 +9652,7 @@ namespace CallSharp
        {
          result = System.Math.Round((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Round({0})", callChain)))
@@ -9672,7 +9672,7 @@ namespace CallSharp
        {
          result = System.Math.Round((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Round({0})", callChain)))
@@ -9692,7 +9692,7 @@ namespace CallSharp
        {
          result = System.Math.Floor((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Floor({0})", callChain)))
@@ -9712,7 +9712,7 @@ namespace CallSharp
        {
          result = System.Math.Floor((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Floor({0})", callChain)))
@@ -9732,7 +9732,7 @@ namespace CallSharp
        {
          result = System.Math.Ceiling((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Ceiling({0})", callChain)))
@@ -9752,7 +9752,7 @@ namespace CallSharp
        {
          result = System.Math.Ceiling((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Ceiling({0})", callChain)))
@@ -9772,7 +9772,7 @@ namespace CallSharp
        {
          result = System.Math.Acos((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Acos({0})", callChain)))
@@ -9792,7 +9792,7 @@ namespace CallSharp
        {
          result = System.Math.Asin((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Asin({0})", callChain)))
@@ -9812,7 +9812,7 @@ namespace CallSharp
        {
          result = System.Math.Atan((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Atan({0})", callChain)))
@@ -9832,7 +9832,7 @@ namespace CallSharp
        {
          result = System.Math.Cos((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Cos({0})", callChain)))
@@ -9852,7 +9852,7 @@ namespace CallSharp
        {
          result = System.Math.Cosh((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Cosh({0})", callChain)))
@@ -9872,7 +9872,7 @@ namespace CallSharp
        {
          result = System.Math.Sin((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sin({0})", callChain)))
@@ -9892,7 +9892,7 @@ namespace CallSharp
        {
          result = System.Math.Tan((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Tan({0})", callChain)))
@@ -9912,7 +9912,7 @@ namespace CallSharp
        {
          result = System.Math.Sinh((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sinh({0})", callChain)))
@@ -9932,7 +9932,7 @@ namespace CallSharp
        {
          result = System.Math.Tanh((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Tanh({0})", callChain)))
@@ -9952,7 +9952,7 @@ namespace CallSharp
        {
          result = System.Math.Truncate((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Truncate({0})", callChain)))
@@ -9972,7 +9972,7 @@ namespace CallSharp
        {
          result = System.Math.Truncate((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Truncate({0})", callChain)))
@@ -9992,7 +9992,7 @@ namespace CallSharp
        {
          result = System.Math.Sqrt((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sqrt({0})", callChain)))
@@ -10012,7 +10012,7 @@ namespace CallSharp
        {
          result = System.Math.Log((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Log({0})", callChain)))
@@ -10032,7 +10032,7 @@ namespace CallSharp
        {
          result = System.Math.Log10((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Log10({0})", callChain)))
@@ -10052,7 +10052,7 @@ namespace CallSharp
        {
          result = System.Math.Exp((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Exp({0})", callChain)))
@@ -10072,7 +10072,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.SByte)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.SByte)output))
+       if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10092,7 +10092,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.Int16)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int16)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10112,7 +10112,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.Int32)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10132,7 +10132,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int64)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10152,7 +10152,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.Single)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Single)output))
+       if (result.HasValue && output.GetType() == typeof(System.Single) && result.Value.Equals((System.Single)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10172,7 +10172,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10192,7 +10192,7 @@ namespace CallSharp
        {
          result = System.Math.Abs((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Abs({0})", callChain)))
@@ -10212,7 +10212,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.SByte)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10232,7 +10232,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.Int16)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10252,7 +10252,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.Int32)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10272,7 +10272,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10292,7 +10292,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.Single)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10312,7 +10312,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10332,7 +10332,7 @@ namespace CallSharp
        {
          result = System.Math.Sign((System.Decimal)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("Math.Sign({0})", callChain)))
@@ -10352,7 +10352,7 @@ namespace CallSharp
        {
          result = System.SByte.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.SByte)output))
+       if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("sbyte.Parse({0})", callChain)))
@@ -10372,7 +10372,7 @@ namespace CallSharp
        {
          result = System.Single.IsInfinity((System.Single)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("float.IsInfinity({0})", callChain)))
@@ -10392,7 +10392,7 @@ namespace CallSharp
        {
          result = System.Single.IsPositiveInfinity((System.Single)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("float.IsPositiveInfinity({0})", callChain)))
@@ -10412,7 +10412,7 @@ namespace CallSharp
        {
          result = System.Single.IsNegativeInfinity((System.Single)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("float.IsNegativeInfinity({0})", callChain)))
@@ -10432,7 +10432,7 @@ namespace CallSharp
        {
          result = System.Single.IsNaN((System.Single)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Boolean)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("float.IsNaN({0})", callChain)))
@@ -10452,7 +10452,7 @@ namespace CallSharp
        {
          result = System.Single.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.Single)output))
+       if (result.HasValue && output.GetType() == typeof(System.Single) && result.Value.Equals((System.Single)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("float.Parse({0})", callChain)))
@@ -10472,7 +10472,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.FromDays((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.FromDays({0})", callChain)))
@@ -10492,7 +10492,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.FromHours((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.FromHours({0})", callChain)))
@@ -10512,7 +10512,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.FromMilliseconds((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.FromMilliseconds({0})", callChain)))
@@ -10532,7 +10532,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.FromMinutes((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.FromMinutes({0})", callChain)))
@@ -10552,7 +10552,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.FromSeconds((System.Double)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.FromSeconds({0})", callChain)))
@@ -10572,7 +10572,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.FromTicks((System.Int64)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.FromTicks({0})", callChain)))
@@ -10592,7 +10592,7 @@ namespace CallSharp
        {
          result = System.TimeSpan.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.TimeSpan)output))
+       if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("TimeSpan.Parse({0})", callChain)))
@@ -10612,7 +10612,7 @@ namespace CallSharp
        {
          result = System.UInt16.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.UInt16)output))
+       if (result.HasValue && output.GetType() == typeof(System.UInt16) && result.Value.Equals((System.UInt16)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("ushort.Parse({0})", callChain)))
@@ -10632,7 +10632,7 @@ namespace CallSharp
        {
          result = System.UInt32.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.UInt32)output))
+       if (result.HasValue && output.GetType() == typeof(System.UInt32) && result.Value.Equals((System.UInt32)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("uint.Parse({0})", callChain)))
@@ -10652,7 +10652,7 @@ namespace CallSharp
        {
          result = System.UInt64.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && result.Value == ((System.UInt64)output))
+       if (result.HasValue && output.GetType() == typeof(System.UInt64) && result.Value.Equals((System.UInt64)output))
        {
          foreach (var c in FindCandidates(origin, result.Value, output, depth+1,
            string.Format("ulong.Parse({0})", callChain)))
