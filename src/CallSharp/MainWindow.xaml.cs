@@ -191,6 +191,7 @@ namespace CallSharp
 
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
+
       Candidates.Clear();
 
       PrimaryRunLabel = "Cancel";

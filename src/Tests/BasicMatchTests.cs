@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using NUnit.Framework;
 using CallSharp;
 
 namespace Tests
@@ -14,7 +16,9 @@ namespace Tests
     [TestCase("xxyy", "xx", "input.TrimEnd('y')")]
     public void StringCalls(string input, string output, string requiredCandidate)
     {
-      Assert.That(mdb.FindCandidates(input,input, output, 2), Contains.Item(requiredCandidate));
+      var candidates = new List<string>();
+      mdb.FindCandidates(x => { candidates.Add(x); }, input, input, output, 2);
+      Assert.That(candidates, Contains.Item(requiredCandidate));
     }
 
     [Test, Category(Categories.LongRunning)]
@@ -22,13 +26,17 @@ namespace Tests
     public void StringTransformations(string input, object output,
       string requiredCandidate)
     {
-      Assert.That(mdb.FindCandidates(input,input, output, 2), Contains.Item(requiredCandidate));
+      var candidates = new List<string>();
+      mdb.FindCandidates(x => candidates.Add(x), input, input, output, 2);
+      Assert.That(candidates, Contains.Item(requiredCandidate));
     }
 
     [Test]
     public void FloatToIntImplicitTest()
     {
-      Assert.That(mdb.FindCandidates(1.0f, 1.0f, 1, 2), Contains.Item("input"));
+      var candidates = new List<string>();
+      mdb.FindCandidates(x => candidates.Add(x), 1.0f, 1.0f, 1, 2);
+      Assert.That(candidates, Contains.Item("input"));
     }
 
     [Test]
