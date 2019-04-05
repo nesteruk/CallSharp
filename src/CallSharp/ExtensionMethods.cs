@@ -187,7 +187,7 @@ namespace CallSharp
         object[] pars = { text, null };
         bool ok = (bool) m.Invoke(null, pars);
         if (ok)
-        {          
+        {
             result.Add(pars[1]);
         }
       }

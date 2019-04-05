@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using JetBrains.Annotations;
 
 namespace CallSharp
@@ -209,7 +210,8 @@ namespace CallSharp
     
 
     [Pure]
-    public void FindCandidates(Action<string> visitor, object origin, object input, object output, int depth, string callChain = "input")
+    public void FindCandidates(Action<string> visitor, object origin, object input, 
+      object output, int depth, CancellationToken token, string callChain = "input")
     {
       Trace.WriteLine(callChain);
 
@@ -351,7 +353,7 @@ namespace CallSharp
           // pass it on
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            FindCandidates(visitorWithCheck, origin, cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain));
+            FindCandidates(visitorWithCheck, origin, cookie.ReturnValue, output, depth + 1, token, cookie.ToString(callChain));
           }
         }
 
@@ -362,14 +364,14 @@ namespace CallSharp
           var cookie = m.InvokeStaticWithSingleArgument(input);
           if (cookie != null && !Equals(cookie.ReturnValue, input))
           {
-            FindCandidates(visitorWithCheck, origin, cookie.ReturnValue, output, depth + 1, cookie.ToString(callChain));
+            FindCandidates(visitorWithCheck, origin, cookie.ReturnValue, output, depth + 1, token, cookie.ToString(callChain));
           }
         }
 
         // we already have call results for some invocation chains, why not try those?
         foreach (var fc in failCookies.Where(fc => fc != null && !Equals(fc.ReturnValue, input)))
         {
-          FindCandidates(visitorWithCheck, origin, fc.ReturnValue, output, depth + 1, fc.ToString(callChain));
+          FindCandidates(visitorWithCheck, origin, fc.ReturnValue, output, depth + 1, token, fc.ToString(callChain));
         }
       }
     }

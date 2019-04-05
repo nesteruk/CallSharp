@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
@@ -27,7 +28,8 @@ namespace CallSharp
     public static readonly DependencyProperty PrimaryRunLabelProperty =
         DependencyProperty.Register("PrimaryRunLabel", typeof(string), typeof(MainWindow), new PropertyMetadata(defaultPrimaryRunText));
 
-
+    private bool busy = false;
+    private CancellationTokenSource cts;
 
     public string SecondaryRunLabel
     {
@@ -49,6 +51,19 @@ namespace CallSharp
     public static readonly DependencyProperty CandidatesProperty =
         DependencyProperty.Register("Candidates", typeof(ObservableHashSet<string>), typeof(MainWindow),
           new PropertyMetadata(new ObservableHashSet<string>()));
+
+
+
+    public ObservableCollection<string> Log
+    {
+      get { return (ObservableCollection<string>)GetValue(LogProperty); }
+      set { SetValue(LogProperty, value); }
+    }
+
+    public static readonly DependencyProperty LogProperty =
+        DependencyProperty.Register("Log", typeof(ObservableCollection<string>), typeof(MainWindow), new PropertyMetadata(new ObservableCollection<string>()));
+
+
 
 
     public string InputText
@@ -94,6 +109,11 @@ namespace CallSharp
 
     private static void InputChanged(DependencyObject d, DependencyPropertyChangedEventArgs _)
     {
+      InputChanged(d);
+    }
+
+    private static void InputChanged(DependencyObject d)
+    {
       var self = (MainWindow) d;
 
       var parsedValues = self.InputText.RemoveMarkers().InferTypes();
@@ -121,7 +141,10 @@ namespace CallSharp
               self.parsedInputValue = me.Tag;
               // restore my type and name
               me.Inlines.Clear();
-              me.Inlines.Add(currentType.GetFriendlyName());
+              var friendlyName = currentType.GetFriendlyName();
+              if (friendlyName == "RuntimeType")
+                Debugger.Break();
+              me.Inlines.Add(friendlyName);
               me.Tag = currentType;
             };
             Span s = new Span(h);
@@ -142,12 +165,39 @@ namespace CallSharp
         DependencyProperty.Register("OutputText", 
           typeof(string), typeof(MainWindow), new PropertyMetadata(string.Empty, OutputChanged));
 
-    private static void OutputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+
+
+    public string Separator
+    {
+      get { return (string)GetValue(SeparatorProperty); }
+      set { SetValue(SeparatorProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for Separator.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty SeparatorProperty =
+        DependencyProperty.Register("Separator", typeof(string), typeof(MainWindow), new PropertyMetadata(string.Empty, SeparatorChanged));
+
+    private static void SeparatorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+      // when the separator is changed, we need to reevaluate both input and output
+      var window = d as MainWindow;
+      InputChanged(d);
+      OutputChanged(d, window.InputText);
+    }
+
+    private static void OutputChanged(DependencyObject d,
+      DependencyPropertyChangedEventArgs e)
+    {
+      OutputChanged(d, (string)e.NewValue);
+    }
+
+
+    private static void OutputChanged(DependencyObject d, string parsed)
     {
       var self = (MainWindow) d;
 
-      var parsedValues = ((string)e.NewValue).InferTypes(); // scalar types
-      parsedValues.Add(e.NewValue);
+      var parsedValues = parsed.InferTypes(); // scalar types
+      parsedValues.Add(parsed);
       if (parsedValues.Any())
       {
         self.parsedOutputValue = parsedValues[0];
@@ -186,26 +236,48 @@ namespace CallSharp
     {
       InitializeComponent();
 
-      Title += " v" +Assembly.GetEntryAssembly().GetName().Version.ToString(3);
+      Title += " v" + Assembly.GetEntryAssembly().GetName().Version.ToString(3);
     }
 
     private void BtnSearch_OnClick(object sender, RoutedEventArgs e)
     {
+      if (busy)
+      {
+        LogInfo("Cancellation requested. Should not have anything here.");
+        cts.Cancel();
+        busy = false;
+      }
+      else
+      {
+        busy = true;
+        // do the search
+        Candidates.Clear();
+        Log.Clear();
+        cts = new CancellationTokenSource();
 
-      Candidates.Clear();
+        PrimaryRunLabel = "Cancel";
+        SecondaryRunLabel = "search in progress";
 
-      PrimaryRunLabel = "Cancel";
-      SecondaryRunLabel = "search in progress";
-      
-      Task.Factory.StartNew(() =>
-        dynamicMemberDatabase.FindCandidates(
-          x => Dispatcher.Invoke(() => Candidates.Add(x)),
-          parsedInputValue,parsedInputValue, parsedOutputValue, 0))
-        .ContinueWith(t =>
-        {
-          PrimaryRunLabel = defaultPrimaryRunText;
-          SecondaryRunLabel = "search complete";
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+        Task.Factory.StartNew(() =>
+          dynamicMemberDatabase.FindCandidates(
+                x => Dispatcher.Invoke(() =>
+                {
+                  LogInfo("Found a candidate: " + x);
+                  Candidates.Add(x);
+                }),
+                parsedInputValue, parsedInputValue, parsedOutputValue, 0, cts.Token),
+            cts.Token)
+          .ContinueWith(t =>
+          {
+            PrimaryRunLabel = defaultPrimaryRunText;
+            SecondaryRunLabel = "search " + (t.IsCanceled ? "canceled" : "completed");
+          }, TaskScheduler.FromCurrentSynchronizationContext());
+      }
+    }
+
+    private void LogInfo(string msg)
+    {
+      Log.Add($"{DateTime.Now.ToLongTimeString()}: {msg}");
     }
 
     private void BtnCopy_OnClick(object sender, RoutedEventArgs e)

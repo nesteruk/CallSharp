@@ -6,6 +6,7 @@ namespace CallSharp
   using System;
   using System.Diagnostics;
   using System.Collections.Generic;
+  using System.Threading;
   using System.Threading.Tasks;
 
   public class StaticMemberDatabase : IMemberDatabase
@@ -16,8 +17,14 @@ namespace CallSharp
       Action<string> visitor,
       object origin,
       object input, object output, int depth,
+      CancellationToken token,
       string callChain = "input")
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       Trace.WriteLine(callChain);
 
       var inputType = input.GetType();
@@ -56,7 +63,12 @@ namespace CallSharp
       // note: technically, we collect fail cookies. or used to.
 
 	    // 1) Look for all matching constructors.
-      if (output is System.String && input is System.Char[])
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    if (output is System.String && input is System.Char[])
     {
       var instance = new System.String((System.Char[])input);
       if (instance == (System.String)output && !Equals(instance,origin))
@@ -64,6 +76,11 @@ namespace CallSharp
         visitorWithCheck($"new string({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.DateTime && input is System.Int64)
     {
       var instance = new System.DateTime((System.Int64)input);
@@ -72,6 +89,11 @@ namespace CallSharp
         visitorWithCheck($"new DateTime({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.Int32)
     {
       var instance = new System.Decimal((System.Int32)input);
@@ -80,6 +102,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.UInt32)
     {
       var instance = new System.Decimal((System.UInt32)input);
@@ -88,6 +115,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.Int64)
     {
       var instance = new System.Decimal((System.Int64)input);
@@ -96,6 +128,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.UInt64)
     {
       var instance = new System.Decimal((System.UInt64)input);
@@ -104,6 +141,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.Single)
     {
       var instance = new System.Decimal((System.Single)input);
@@ -112,6 +154,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.Double)
     {
       var instance = new System.Decimal((System.Double)input);
@@ -120,6 +167,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.Decimal && input is System.Int32[])
     {
       var instance = new System.Decimal((System.Int32[])input);
@@ -128,6 +180,11 @@ namespace CallSharp
         visitorWithCheck($"new decimal({callChain})");
       }
     }
+    if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
     if (output is System.TimeSpan && input is System.Int64)
     {
       var instance = new System.TimeSpan((System.Int64)input);
@@ -137,29 +194,12 @@ namespace CallSharp
       }
     }
         // 2) 1-to-1 instance functions.
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.Char[]).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).ToCharArray();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToCharArray()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.Int32).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).GetHashCode();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.GetHashCode()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is String && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -170,150 +210,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String[]).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).Split();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Split()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).Trim();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Trim()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).TrimStart();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.TrimStart()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).TrimEnd();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.TrimEnd()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).IsNormalized();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.IsNormalized()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).Normalize();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Normalize()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).ToLower();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToLower()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).ToLowerInvariant();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToLowerInvariant()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).ToUpper();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToUpper()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).ToUpperInvariant();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToUpperInvariant()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).ToString();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToString()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.Object).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).Clone();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Clone()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.String)input).Trim();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Trim()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is String && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -324,7 +226,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is String && typeof(System.CharEnumerator).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -335,7 +242,252 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).ToLower();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToLower()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).ToLowerInvariant();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToLowerInvariant()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).ToUpper();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToUpper()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).ToUpperInvariant();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToUpperInvariant()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).ToString();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToString()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.Object).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).Clone();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Clone()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).Trim();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Trim()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.Char[]).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).ToCharArray();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToCharArray()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.Int32).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).GetHashCode();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.GetHashCode()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String[]).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).Split();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Split()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).Trim();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Trim()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).TrimStart();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.TrimStart()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).TrimEnd();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.TrimEnd()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.Boolean).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).IsNormalized();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.IsNormalized()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is String && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.String)input).Normalize();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Normalize()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -346,7 +498,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -357,7 +514,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -368,7 +530,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -379,7 +546,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -390,7 +562,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -401,7 +578,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -412,95 +594,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).IsDaylightSavingTime();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.IsDaylightSavingTime()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.Int64).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).ToBinary();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToBinary()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.DateTime).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).Date;
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Date", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.DayOfWeek).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).DayOfWeek;
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.DayOfWeek", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).DayOfYear;
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.DayOfYear", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).GetHashCode();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.GetHashCode()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.DateTimeKind).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).Kind;
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Kind", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.DateTime)input).Millisecond;
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.Millisecond", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int64).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -511,7 +610,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -522,7 +626,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Double).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -533,7 +642,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int64).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -544,7 +658,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.Int64).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -555,7 +674,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.DateTime).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -566,7 +690,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -577,7 +706,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -588,7 +722,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -599,7 +738,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -610,7 +754,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -621,7 +770,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.DateTime).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -632,7 +786,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.String[]).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -643,7 +802,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is DateTime && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -654,7 +818,140 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.Boolean).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).IsDaylightSavingTime();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.IsDaylightSavingTime()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.Int64).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).ToBinary();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToBinary()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.DateTime).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).Date;
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Date", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.DayOfWeek).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).DayOfWeek;
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.DayOfWeek", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).DayOfYear;
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.DayOfYear", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).GetHashCode();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.GetHashCode()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.DateTimeKind).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).Kind;
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Kind", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is DateTime && typeof(System.Int32).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.DateTime)input).Millisecond;
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.Millisecond", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -665,7 +962,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Boolean && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -676,7 +978,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Boolean && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -687,7 +994,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Boolean && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -698,7 +1010,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -709,7 +1026,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Byte && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -720,7 +1042,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Byte && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -731,7 +1058,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Byte && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -742,7 +1074,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -753,7 +1090,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Char && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -764,7 +1106,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Char && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -775,7 +1122,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Char && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -786,7 +1138,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -797,29 +1154,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
-    if (input is Decimal && typeof(System.Int32).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.Decimal)input).GetHashCode();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.GetHashCode()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (input is Decimal && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.Decimal)input).ToString();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToString()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Decimal && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -830,7 +1170,44 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is Decimal && typeof(System.Int32).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.Decimal)input).GetHashCode();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.GetHashCode()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is Decimal && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.Decimal)input).ToString();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToString()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -841,7 +1218,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Double && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -852,7 +1234,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Double && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -863,7 +1250,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Double && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -874,7 +1266,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -885,7 +1282,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int16 && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -896,7 +1298,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int16 && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -907,7 +1314,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int16 && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -918,7 +1330,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -929,7 +1346,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int32 && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -940,7 +1362,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int32 && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -951,7 +1378,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int32 && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -962,7 +1394,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -973,7 +1410,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int64 && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -984,7 +1426,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int64 && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -995,7 +1442,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Int64 && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1006,7 +1458,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1017,7 +1474,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1028,7 +1490,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1039,7 +1506,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1050,18 +1522,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
-    if (input is SByte && typeof(System.String).IsConvertibleTo(outputType))
-    {
-      // invoke!
-            var result = ((System.SByte)input).ToString();
-            if (Equals(result, output) && !Equals(result, origin))
-      {
-                visitorWithCheck(string.Format("{0}.ToString()", callChain));
-      }
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is SByte && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1072,7 +1538,28 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (input is SByte && typeof(System.String).IsConvertibleTo(outputType))
+    {
+      // invoke!
+            var result = ((System.SByte)input).ToString();
+            if (Equals(result, output) && !Equals(result, origin))
+      {
+                visitorWithCheck(string.Format("{0}.ToString()", callChain));
+      }
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is SByte && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1083,7 +1570,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1094,7 +1586,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Single && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1105,7 +1602,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Single && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1116,7 +1618,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Single && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1127,7 +1634,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1138,7 +1650,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int64).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1149,7 +1666,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1160,7 +1682,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1171,7 +1698,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1182,7 +1714,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1193,7 +1730,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1204,7 +1746,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Double).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1215,7 +1762,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Double).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1226,7 +1778,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Double).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1237,7 +1794,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Double).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1248,7 +1810,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Double).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1259,7 +1826,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1270,7 +1842,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1281,7 +1858,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1292,7 +1874,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is TimeSpan && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1303,7 +1890,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1314,7 +1906,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt16 && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1325,7 +1922,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt16 && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1336,7 +1938,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt16 && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1347,7 +1954,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1358,7 +1970,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt32 && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1369,7 +1986,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt32 && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1380,7 +2002,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt32 && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1391,7 +2018,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1402,7 +2034,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt64 && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1413,7 +2050,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt64 && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1424,7 +2066,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is UInt64 && typeof(System.TypeCode).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1435,7 +2082,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1446,7 +2098,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.String).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1457,7 +2114,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Int32).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1468,7 +2130,12 @@ namespace CallSharp
       }
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (input is Object && typeof(System.Type).IsConvertibleTo(outputType))
     {
       // invoke!
@@ -1480,82 +2147,12 @@ namespace CallSharp
     }
     });
       // 3. Search static members
-      Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.String)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.String.IsNullOrEmpty((System.String)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("string.IsNullOrEmpty({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.String)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.String.IsNullOrWhiteSpace((System.String)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("string.IsNullOrWhiteSpace({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.String)) &&
-        typeof(System.String).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.String.Copy((System.String)input);
-        if (result == (System.String)output && !Equals(result,origin))
-                  retVal = string.Format("string.Copy({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Object)) &&
-        typeof(System.String).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.String.Concat((System.Object)input);
-        if (result == (System.String)output && !Equals(result,origin))
-                  retVal = string.Format("string.Concat({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Object[])) &&
-        typeof(System.String).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.String.Concat((System.Object[])input);
-        if (result == (System.String)output && !Equals(result,origin))
-                  retVal = string.Format("string.Concat({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.String[])) &&
         typeof(System.String).IsConvertibleTo(outputType))
     {
@@ -1570,7 +2167,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.String)) &&
         typeof(System.String).IsConvertibleTo(outputType))
     {
@@ -1585,7 +2187,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.String)) &&
         typeof(System.String).IsConvertibleTo(outputType))
     {
@@ -1600,67 +2207,112 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
-        typeof(System.DateTime).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.String)) &&
+        typeof(System.String).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.DateTime.FromBinary((System.Int64)input);
-        if (result == (System.DateTime)output && !Equals(result,origin))
-                  retVal = string.Format("DateTime.FromBinary({0})", callChain);
+        var result = System.String.Copy((System.String)input);
+        if (result == (System.String)output && !Equals(result,origin))
+                  retVal = string.Format("string.Copy({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
-        typeof(System.DateTime).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Object)) &&
+        typeof(System.String).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.DateTime.FromFileTime((System.Int64)input);
-        if (result == (System.DateTime)output && !Equals(result,origin))
-                  retVal = string.Format("DateTime.FromFileTime({0})", callChain);
+        var result = System.String.Concat((System.Object)input);
+        if (result == (System.String)output && !Equals(result,origin))
+                  retVal = string.Format("string.Concat({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
-        typeof(System.DateTime).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Object[])) &&
+        typeof(System.String).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.DateTime.FromFileTimeUtc((System.Int64)input);
-        if (result == (System.DateTime)output && !Equals(result,origin))
-                  retVal = string.Format("DateTime.FromFileTimeUtc({0})", callChain);
+        var result = System.String.Concat((System.Object[])input);
+        if (result == (System.String)output && !Equals(result,origin))
+                  retVal = string.Format("string.Concat({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Double)) &&
-        typeof(System.DateTime).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.String)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.DateTime.FromOADate((System.Double)input);
-        if (result == (System.DateTime)output && !Equals(result,origin))
-                  retVal = string.Format("DateTime.FromOADate({0})", callChain);
+        var result = System.String.IsNullOrEmpty((System.String)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("string.IsNullOrEmpty({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.String)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.String.IsNullOrWhiteSpace((System.String)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("string.IsNullOrWhiteSpace({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int32)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1675,7 +2327,92 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
+        typeof(System.DateTime).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.DateTime.FromBinary((System.Int64)input);
+        if (result == (System.DateTime)output && !Equals(result,origin))
+                  retVal = string.Format("DateTime.FromBinary({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
+        typeof(System.DateTime).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.DateTime.FromFileTime((System.Int64)input);
+        if (result == (System.DateTime)output && !Equals(result,origin))
+                  retVal = string.Format("DateTime.FromFileTime({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
+        typeof(System.DateTime).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.DateTime.FromFileTimeUtc((System.Int64)input);
+        if (result == (System.DateTime)output && !Equals(result,origin))
+                  retVal = string.Format("DateTime.FromFileTimeUtc({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Double)) &&
+        typeof(System.DateTime).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.DateTime.FromOADate((System.Double)input);
+        if (result == (System.DateTime)output && !Equals(result,origin))
+                  retVal = string.Format("DateTime.FromOADate({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Char).IsConvertibleTo(outputType))
     {
@@ -1690,187 +2427,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.String).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.ToString((System.Char)input);
-        if (result == (System.String)output && !Equals(result,origin))
-                  retVal = string.Format("char.ToString({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsDigit((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsDigit({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsLetter((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsLetter({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsWhiteSpace((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsWhiteSpace({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsUpper((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsUpper({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsLower((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsLower({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsPunctuation((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsPunctuation({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsLetterOrDigit((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsLetterOrDigit({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Char).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.ToUpper((System.Char)input);
-        if (result == (System.Char)output && !Equals(result,origin))
-                  retVal = string.Format("char.ToUpper({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Char).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.ToUpperInvariant((System.Char)input);
-        if (result == (System.Char)output && !Equals(result,origin))
-                  retVal = string.Format("char.ToUpperInvariant({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Char).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.ToLowerInvariant((System.Char)input);
-        if (result == (System.Char)output && !Equals(result,origin))
-                  retVal = string.Format("char.ToLowerInvariant({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
-        typeof(System.Boolean).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Char.IsControl((System.Char)input);
-        if (result == (System.Boolean)output && !Equals(result,origin))
-                  retVal = string.Format("char.IsControl({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1885,7 +2447,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1900,7 +2467,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1915,7 +2487,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1930,7 +2507,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Globalization.UnicodeCategory).IsConvertibleTo(outputType))
     {
@@ -1945,7 +2527,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -1960,7 +2547,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1975,7 +2567,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Char)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -1990,7 +2587,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int32)) &&
         typeof(System.String).IsConvertibleTo(outputType))
     {
@@ -2005,217 +2607,252 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Int64).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.String).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.ToOACurrency((System.Decimal)input);
-        if (result == (System.Int64)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToOACurrency({0})", callChain);
+        var result = System.Char.ToString((System.Char)input);
+        if (result == (System.String)output && !Equals(result,origin))
+                  retVal = string.Format("char.ToString({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
-        typeof(System.Decimal).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.FromOACurrency((System.Int64)input);
-        if (result == (System.Decimal)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.FromOACurrency({0})", callChain);
+        var result = System.Char.IsDigit((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsDigit({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Decimal).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.Ceiling((System.Decimal)input);
-        if (result == (System.Decimal)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.Ceiling({0})", callChain);
+        var result = System.Char.IsLetter((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsLetter({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Decimal).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.Floor((System.Decimal)input);
-        if (result == (System.Decimal)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.Floor({0})", callChain);
+        var result = System.Char.IsWhiteSpace((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsWhiteSpace({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Int32[]).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.GetBits((System.Decimal)input);
-        if (result == (System.Int32[])output && !Equals(result,origin))
-                  retVal = string.Format("decimal.GetBits({0})", callChain);
+        var result = System.Char.IsUpper((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsUpper({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Decimal).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.Negate((System.Decimal)input);
-        if (result == (System.Decimal)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.Negate({0})", callChain);
+        var result = System.Char.IsLower((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsLower({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Decimal).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.Round((System.Decimal)input);
-        if (result == (System.Decimal)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.Round({0})", callChain);
+        var result = System.Char.IsPunctuation((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsPunctuation({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Byte).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.ToByte((System.Decimal)input);
-        if (result == (System.Byte)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToByte({0})", callChain);
+        var result = System.Char.IsLetterOrDigit((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsLetterOrDigit({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.SByte).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Char).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.ToSByte((System.Decimal)input);
-        if (result == (System.SByte)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToSByte({0})", callChain);
+        var result = System.Char.ToUpper((System.Char)input);
+        if (result == (System.Char)output && !Equals(result,origin))
+                  retVal = string.Format("char.ToUpper({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Int16).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Char).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.ToInt16((System.Decimal)input);
-        if (result == (System.Int16)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToInt16({0})", callChain);
+        var result = System.Char.ToUpperInvariant((System.Char)input);
+        if (result == (System.Char)output && !Equals(result,origin))
+                  retVal = string.Format("char.ToUpperInvariant({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Double).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Char).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.ToDouble((System.Decimal)input);
-        if (result == (System.Double)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToDouble({0})", callChain);
+        var result = System.Char.ToLowerInvariant((System.Char)input);
+        if (result == (System.Char)output && !Equals(result,origin))
+                  retVal = string.Format("char.ToLowerInvariant({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Int32).IsConvertibleTo(outputType))
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Char)) &&
+        typeof(System.Boolean).IsConvertibleTo(outputType))
     {
       string retVal = null;
       try
       {
-        var result = System.Decimal.ToInt32((System.Decimal)input);
-        if (result == (System.Int32)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToInt32({0})", callChain);
+        var result = System.Char.IsControl((System.Char)input);
+        if (result == (System.Boolean)output && !Equals(result,origin))
+                  retVal = string.Format("char.IsControl({0})", callChain);
       }
       catch {}
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.Int64).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Decimal.ToInt64((System.Decimal)input);
-        if (result == (System.Int64)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToInt64({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
-    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
-        typeof(System.UInt16).IsConvertibleTo(outputType))
-    {
-      string retVal = null;
-      try
-      {
-        var result = System.Decimal.ToUInt16((System.Decimal)input);
-        if (result == (System.UInt16)output && !Equals(result,origin))
-                  retVal = string.Format("decimal.ToUInt16({0})", callChain);
-      }
-      catch {}
-      if (retVal != null) visitor(retVal);
-    }
-    });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.UInt32).IsConvertibleTo(outputType))
     {
@@ -2230,7 +2867,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.UInt64).IsConvertibleTo(outputType))
     {
@@ -2245,7 +2887,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Single).IsConvertibleTo(outputType))
     {
@@ -2260,7 +2907,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Decimal).IsConvertibleTo(outputType))
     {
@@ -2275,7 +2927,292 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Int64).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToOACurrency((System.Decimal)input);
+        if (result == (System.Int64)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToOACurrency({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
+        typeof(System.Decimal).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.FromOACurrency((System.Int64)input);
+        if (result == (System.Decimal)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.FromOACurrency({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Decimal).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.Ceiling((System.Decimal)input);
+        if (result == (System.Decimal)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.Ceiling({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Decimal).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.Floor((System.Decimal)input);
+        if (result == (System.Decimal)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.Floor({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Int32[]).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.GetBits((System.Decimal)input);
+        if (result == (System.Int32[])output && !Equals(result,origin))
+                  retVal = string.Format("decimal.GetBits({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Decimal).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.Negate((System.Decimal)input);
+        if (result == (System.Decimal)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.Negate({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Decimal).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.Round((System.Decimal)input);
+        if (result == (System.Decimal)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.Round({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Byte).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToByte((System.Decimal)input);
+        if (result == (System.Byte)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToByte({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.SByte).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToSByte((System.Decimal)input);
+        if (result == (System.SByte)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToSByte({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Int16).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToInt16((System.Decimal)input);
+        if (result == (System.Int16)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToInt16({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Double).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToDouble((System.Decimal)input);
+        if (result == (System.Double)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToDouble({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Int32).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToInt32((System.Decimal)input);
+        if (result == (System.Int32)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToInt32({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.Int64).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToInt64((System.Decimal)input);
+        if (result == (System.Int64)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToInt64({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
+    if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
+        typeof(System.UInt16).IsConvertibleTo(outputType))
+    {
+      string retVal = null;
+      try
+      {
+        var result = System.Decimal.ToUInt16((System.Decimal)input);
+        if (result == (System.UInt16)output && !Equals(result,origin))
+                  retVal = string.Format("decimal.ToUInt16({0})", callChain);
+      }
+      catch {}
+      if (retVal != null) visitor(retVal);
+    }
+    });
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2290,7 +3227,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2305,7 +3247,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2320,7 +3267,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2335,7 +3287,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2350,7 +3307,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Decimal).IsConvertibleTo(outputType))
     {
@@ -2365,7 +3327,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Decimal).IsConvertibleTo(outputType))
     {
@@ -2380,7 +3347,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2395,7 +3367,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Decimal).IsConvertibleTo(outputType))
     {
@@ -2410,7 +3387,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2425,7 +3407,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2440,7 +3427,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2455,7 +3447,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2470,7 +3467,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2485,7 +3487,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2500,7 +3507,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2515,7 +3527,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2530,7 +3547,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2545,7 +3567,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2560,7 +3587,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Decimal).IsConvertibleTo(outputType))
     {
@@ -2575,7 +3607,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2590,7 +3627,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2605,7 +3647,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2620,7 +3667,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2635,7 +3687,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2650,7 +3707,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.SByte)) &&
         typeof(System.SByte).IsConvertibleTo(outputType))
     {
@@ -2665,7 +3727,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int16)) &&
         typeof(System.Int16).IsConvertibleTo(outputType))
     {
@@ -2680,7 +3747,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int32)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2695,7 +3767,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
         typeof(System.Int64).IsConvertibleTo(outputType))
     {
@@ -2710,7 +3787,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Single)) &&
         typeof(System.Single).IsConvertibleTo(outputType))
     {
@@ -2725,7 +3807,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Double).IsConvertibleTo(outputType))
     {
@@ -2740,7 +3827,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Decimal).IsConvertibleTo(outputType))
     {
@@ -2755,7 +3847,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.SByte)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2770,7 +3867,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int16)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2785,7 +3887,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int32)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2800,7 +3907,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2815,7 +3927,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Single)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2830,7 +3947,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2845,7 +3967,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Decimal)) &&
         typeof(System.Int32).IsConvertibleTo(outputType))
     {
@@ -2860,7 +3987,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Single)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2875,7 +4007,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Single)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2890,7 +4027,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Single)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2905,7 +4047,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Single)) &&
         typeof(System.Boolean).IsConvertibleTo(outputType))
     {
@@ -2920,7 +4067,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
@@ -2935,7 +4087,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
@@ -2950,7 +4107,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
@@ -2965,7 +4127,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
@@ -2980,7 +4147,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Double)) &&
         typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
@@ -2995,7 +4167,12 @@ namespace CallSharp
       if (retVal != null) visitor(retVal);
     }
     });
-        Task.Factory.StartNew(() => {
+        if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+    Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(System.Int64)) &&
         typeof(System.TimeSpan).IsConvertibleTo(outputType))
     {
@@ -3015,101 +4192,11 @@ namespace CallSharp
   {
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
-      if (input is String 
-          && typeof(System.Boolean).IsConvertibleTo(outputType))
-      {
-        System.Boolean? result = new System.Boolean?();
-        try {
-          result = ((System.String)input).Equals((System.Object)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.Equals({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
-    {
-      if (input is String 
-          && typeof(System.Boolean).IsConvertibleTo(outputType))
-      {
-        System.Boolean? result = new System.Boolean?();
-        try {
-          result = ((System.String)input).Equals((System.String)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.Equals({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
-    {
-      if (input is String 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.String)input).Substring((System.Int32)arg);
-        } catch {}
-        if (result != null 
-            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
-            && !Equals(result, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.Substring({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Text.NormalizationForm)), arg => {
-    {
-      if (input is String 
-          && typeof(System.Boolean).IsConvertibleTo(outputType))
-      {
-        System.Boolean? result = new System.Boolean?();
-        try {
-          result = ((System.String)input).IsNormalized((System.Text.NormalizationForm)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.IsNormalized({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Text.NormalizationForm)), arg => {
-    {
-      if (input is String 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.String)input).Normalize((System.Text.NormalizationForm)arg);
-        } catch {}
-        if (result != null 
-            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
-            && !Equals(result, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.Normalize({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
-    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3129,6 +4216,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3148,6 +4240,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3167,6 +4264,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3186,6 +4288,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3205,6 +4312,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char[])), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3224,6 +4336,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3243,6 +4360,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3262,6 +4384,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char[])), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3281,6 +4408,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3300,6 +4432,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3319,6 +4456,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3338,6 +4480,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3357,6 +4504,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Globalization.CultureInfo)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3376,6 +4528,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Globalization.CultureInfo)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3395,6 +4552,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3414,6 +4576,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3431,223 +4598,19 @@ namespace CallSharp
       }
     }
     });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).Add((System.TimeSpan)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.Add({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddDays((System.Double)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddDays({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddHours((System.Double)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddHours({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddMilliseconds((System.Double)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddMilliseconds({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddMinutes((System.Double)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddMinutes({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddMonths((System.Int32)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddMonths({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddSeconds((System.Double)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddSeconds({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int64)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddTicks((System.Int64)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddTicks({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.DateTime).IsConvertibleTo(outputType))
-      {
-        System.DateTime? result = new System.DateTime?();
-        try {
-          result = ((System.DateTime)input).AddYears((System.Int32)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.AddYears({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
-      if (input is DateTime 
-          && typeof(System.Int32).IsConvertibleTo(outputType))
-      {
-        System.Int32? result = new System.Int32?();
-        try {
-          result = ((System.DateTime)input).CompareTo((System.Object)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.CompareTo({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.DateTime)), arg => {
-    {
-      if (input is DateTime 
-          && typeof(System.Int32).IsConvertibleTo(outputType))
-      {
-        System.Int32? result = new System.Int32?();
-        try {
-          result = ((System.DateTime)input).CompareTo((System.DateTime)arg);
-        } catch {}
-        if (result.HasValue 
-            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
-            && !Equals(result.Value, origin))
-        {
-                    visitorWithCheck(string.Format("{0}.CompareTo({1})", callChain, 
-            arg.ToLiteral()));
-        }
-      }
-    }
-    });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
-    {
-      if (input is DateTime 
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
         System.Boolean? result = new System.Boolean?();
         try {
-          result = ((System.DateTime)input).Equals((System.Object)arg);
+          result = ((System.String)input).Equals((System.Object)arg);
         } catch {}
         if (result.HasValue 
             && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
@@ -3659,14 +4622,19 @@ namespace CallSharp
       }
     }
     });
-    Parallel.ForEach (fragEngine.Frag(input, typeof(System.DateTime)), arg => {
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
-      if (input is DateTime 
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
         System.Boolean? result = new System.Boolean?();
         try {
-          result = ((System.DateTime)input).Equals((System.DateTime)arg);
+          result = ((System.String)input).Equals((System.String)arg);
         } catch {}
         if (result.HasValue 
             && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
@@ -3678,8 +4646,85 @@ namespace CallSharp
       }
     }
     });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.String)input).Substring((System.Int32)arg);
+        } catch {}
+        if (result != null 
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
+            && !Equals(result, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.Substring({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Text.NormalizationForm)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.Boolean).IsConvertibleTo(outputType))
+      {
+        System.Boolean? result = new System.Boolean?();
+        try {
+          result = ((System.String)input).IsNormalized((System.Text.NormalizationForm)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.IsNormalized({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Text.NormalizationForm)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.String)input).Normalize((System.Text.NormalizationForm)arg);
+        } catch {}
+        if (result != null 
+            && output.GetType() == typeof(System.String) && result.Equals((System.String)output)
+            && !Equals(result, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.Normalize({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.DateTime)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.TimeSpan).IsConvertibleTo(outputType))
       {
@@ -3699,6 +4744,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.DateTime).IsConvertibleTo(outputType))
       {
@@ -3718,6 +4768,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3737,6 +4792,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3756,6 +4816,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.String[]).IsConvertibleTo(outputType))
       {
@@ -3775,6 +4840,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.String[]).IsConvertibleTo(outputType))
       {
@@ -3792,8 +4862,325 @@ namespace CallSharp
       }
     }
     });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).Add((System.TimeSpan)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.Add({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddDays((System.Double)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddDays({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddHours((System.Double)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddHours({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddMilliseconds((System.Double)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddMilliseconds({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddMinutes((System.Double)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddMinutes({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddMonths((System.Int32)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddMonths({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddSeconds((System.Double)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddSeconds({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int64)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddTicks((System.Int64)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddTicks({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.DateTime).IsConvertibleTo(outputType))
+      {
+        System.DateTime? result = new System.DateTime?();
+        try {
+          result = ((System.DateTime)input).AddYears((System.Int32)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.AddYears({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.Int32).IsConvertibleTo(outputType))
+      {
+        System.Int32? result = new System.Int32?();
+        try {
+          result = ((System.DateTime)input).CompareTo((System.Object)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.CompareTo({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.DateTime)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.Int32).IsConvertibleTo(outputType))
+      {
+        System.Int32? result = new System.Int32?();
+        try {
+          result = ((System.DateTime)input).CompareTo((System.DateTime)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.CompareTo({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.Boolean).IsConvertibleTo(outputType))
+      {
+        System.Boolean? result = new System.Boolean?();
+        try {
+          result = ((System.DateTime)input).Equals((System.Object)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.Equals({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
+    Parallel.ForEach (fragEngine.Frag(input, typeof(System.DateTime)), arg => {
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is DateTime 
+          && typeof(System.Boolean).IsConvertibleTo(outputType))
+      {
+        System.Boolean? result = new System.Boolean?();
+        try {
+          result = ((System.DateTime)input).Equals((System.DateTime)arg);
+        } catch {}
+        if (result.HasValue 
+            && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output)
+            && !Equals(result.Value, origin))
+        {
+                    visitorWithCheck(string.Format("{0}.Equals({1})", callChain, 
+            arg.ToLiteral()));
+        }
+      }
+    }
+    });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Boolean 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3813,6 +5200,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Boolean 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3832,6 +5224,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Boolean)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Boolean 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3851,6 +5248,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Boolean 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3870,6 +5272,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Boolean)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Boolean 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3889,6 +5296,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3908,6 +5320,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Byte)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -3927,6 +5344,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3946,6 +5368,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Byte)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -3965,6 +5392,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -3984,6 +5416,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4003,6 +5440,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Char 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4022,6 +5464,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Char 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4041,6 +5488,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Char 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4060,6 +5512,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Char)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Char 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4079,6 +5536,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Char 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4098,6 +5560,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4117,6 +5584,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Decimal)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4136,6 +5608,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4155,6 +5632,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Decimal)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4174,6 +5656,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4193,6 +5680,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4212,6 +5704,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4231,6 +5728,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4250,6 +5752,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4269,6 +5776,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Double)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4288,6 +5800,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4307,6 +5824,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4326,6 +5848,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4345,6 +5872,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int16)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4364,6 +5896,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4383,6 +5920,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int16)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4402,6 +5944,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4421,6 +5968,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4440,6 +5992,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4459,6 +6016,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4478,6 +6040,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4497,6 +6064,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4516,6 +6088,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4535,6 +6112,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4554,6 +6136,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4573,6 +6160,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int64)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4592,6 +6184,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4611,6 +6208,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Int64)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4630,6 +6232,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4649,6 +6256,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4668,6 +6280,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Object 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4687,6 +6304,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4706,6 +6328,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.SByte)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4725,6 +6352,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4744,6 +6376,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.SByte)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4763,6 +6400,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4782,6 +6424,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4801,6 +6448,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4820,6 +6472,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Single)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4839,6 +6496,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4858,6 +6520,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Single)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4877,6 +6544,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4896,6 +6568,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -4915,6 +6592,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.TimeSpan).IsConvertibleTo(outputType))
       {
@@ -4934,6 +6616,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4953,6 +6640,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -4972,6 +6664,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -4991,6 +6688,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5010,6 +6712,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.TimeSpan)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.TimeSpan).IsConvertibleTo(outputType))
       {
@@ -5029,6 +6736,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5048,6 +6760,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5067,6 +6784,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.UInt16)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5086,6 +6808,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5105,6 +6832,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.UInt16)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5124,6 +6856,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5143,6 +6880,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5162,6 +6904,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5181,6 +6928,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.UInt32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5200,6 +6952,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5219,6 +6976,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.UInt32)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5238,6 +7000,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5257,6 +7024,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5276,6 +7048,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5295,6 +7072,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.UInt64)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5314,6 +7096,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5333,6 +7120,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.UInt64)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5352,6 +7144,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.IFormatProvider)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5371,6 +7168,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.String)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5390,6 +7192,11 @@ namespace CallSharp
     });
     Parallel.ForEach (fragEngine.Frag(input, typeof(System.Object)), arg => {
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Object 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5415,126 +7222,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringComparison)))
     {
-      if (input is String 
-          && typeof(System.Boolean).IsConvertibleTo(outputType))
-      {
-        System.Boolean? result = new System.Boolean?();
-        try {
-          result = ((System.String)input).Equals(
-            (System.String)arg1,
-            (System.StringComparison)arg2
-          );
-        } catch {}
-        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-        {
-          visitorWithCheck(string.Format("{0}.Equals({1}, {2})", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral()));
-        }
-      }
-    }
-    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
-    foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
-    {
-      if (input is String 
-          && typeof(System.Char[]).IsConvertibleTo(outputType))
-      {
-        System.Char[] result = null;
-        try {
-          result = ((System.String)input).ToCharArray(
-            (System.Int32)arg1,
-            (System.Int32)arg2
-          );
-        } catch {}
-        if (result != null && output.GetType() == typeof(System.Char[]) && result.Equals((System.Char[])output))
-        {
-          visitorWithCheck(string.Format("{0}.ToCharArray({1}, {2})", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral()));
-        }
-      }
-    }
-    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char[])))
-    foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
-    {
-      if (input is String 
-          && typeof(System.String[]).IsConvertibleTo(outputType))
-      {
-        System.String[] result = null;
-        try {
-          result = ((System.String)input).Split(
-            (System.Char[])arg1,
-            (System.Int32)arg2
-          );
-        } catch {}
-        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
-        {
-          visitorWithCheck(string.Format("{0}.Split({1}, {2})", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral()));
-        }
-      }
-    }
-    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char[])))
-    foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringSplitOptions)))
-    {
-      if (input is String 
-          && typeof(System.String[]).IsConvertibleTo(outputType))
-      {
-        System.String[] result = null;
-        try {
-          result = ((System.String)input).Split(
-            (System.Char[])arg1,
-            (System.StringSplitOptions)arg2
-          );
-        } catch {}
-        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
-        {
-          visitorWithCheck(string.Format("{0}.Split({1}, {2})", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral()));
-        }
-      }
-    }
-    foreach (var arg1 in fragEngine.Frag(input, typeof(System.String[])))
-    foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringSplitOptions)))
-    {
-      if (input is String 
-          && typeof(System.String[]).IsConvertibleTo(outputType))
-      {
-        System.String[] result = null;
-        try {
-          result = ((System.String)input).Split(
-            (System.String[])arg1,
-            (System.StringSplitOptions)arg2
-          );
-        } catch {}
-        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
-        {
-          visitorWithCheck(string.Format("{0}.Split({1}, {2})", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral()));
-        }
-      }
-    }
-    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
-    foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
-    {
-      if (input is String 
-          && typeof(System.String).IsConvertibleTo(outputType))
-      {
-        System.String result = null;
-        try {
-          result = ((System.String)input).Substring(
-            (System.Int32)arg1,
-            (System.Int32)arg2
-          );
-        } catch {}
-        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
-        {
-          visitorWithCheck(string.Format("{0}.Substring({1}, {2})", callChain, 
-            arg1.ToLiteral(), arg2.ToLiteral()));
-        }
-      }
-    }
-    foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
-    foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringComparison)))
-    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5555,6 +7247,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5575,6 +7272,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char[])))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5595,6 +7297,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5615,6 +7322,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringComparison)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5635,6 +7347,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5655,6 +7372,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char[])))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5675,6 +7397,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5695,6 +7422,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringComparison)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Int32).IsConvertibleTo(outputType))
       {
@@ -5715,6 +7447,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Char)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5735,6 +7472,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Char)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5755,6 +7497,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringComparison)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.Boolean).IsConvertibleTo(outputType))
       {
@@ -5775,6 +7522,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.String)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5795,6 +7547,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Char)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5815,6 +7572,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.String)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5835,6 +7597,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is String 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5853,8 +7620,163 @@ namespace CallSharp
       }
     }
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringComparison)))
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.Boolean).IsConvertibleTo(outputType))
+      {
+        System.Boolean? result = new System.Boolean?();
+        try {
+          result = ((System.String)input).Equals(
+            (System.String)arg1,
+            (System.StringComparison)arg2
+          );
+        } catch {}
+        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
+        {
+          visitorWithCheck(string.Format("{0}.Equals({1}, {2})", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
+        }
+      }
+    }
+    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.Char[]).IsConvertibleTo(outputType))
+      {
+        System.Char[] result = null;
+        try {
+          result = ((System.String)input).ToCharArray(
+            (System.Int32)arg1,
+            (System.Int32)arg2
+          );
+        } catch {}
+        if (result != null && output.GetType() == typeof(System.Char[]) && result.Equals((System.Char[])output))
+        {
+          visitorWithCheck(string.Format("{0}.ToCharArray({1}, {2})", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
+        }
+      }
+    }
+    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char[])))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.String[]).IsConvertibleTo(outputType))
+      {
+        System.String[] result = null;
+        try {
+          result = ((System.String)input).Split(
+            (System.Char[])arg1,
+            (System.Int32)arg2
+          );
+        } catch {}
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
+        {
+          visitorWithCheck(string.Format("{0}.Split({1}, {2})", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
+        }
+      }
+    }
+    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char[])))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringSplitOptions)))
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.String[]).IsConvertibleTo(outputType))
+      {
+        System.String[] result = null;
+        try {
+          result = ((System.String)input).Split(
+            (System.Char[])arg1,
+            (System.StringSplitOptions)arg2
+          );
+        } catch {}
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
+        {
+          visitorWithCheck(string.Format("{0}.Split({1}, {2})", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
+        }
+      }
+    }
+    foreach (var arg1 in fragEngine.Frag(input, typeof(System.String[])))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(System.StringSplitOptions)))
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.String[]).IsConvertibleTo(outputType))
+      {
+        System.String[] result = null;
+        try {
+          result = ((System.String)input).Split(
+            (System.String[])arg1,
+            (System.StringSplitOptions)arg2
+          );
+        } catch {}
+        if (result != null && output.GetType() == typeof(System.String[]) && result.Equals((System.String[])output))
+        {
+          visitorWithCheck(string.Format("{0}.Split({1}, {2})", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
+        }
+      }
+    }
+    foreach (var arg1 in fragEngine.Frag(input, typeof(System.Int32)))
+    foreach (var arg2 in fragEngine.Frag(input, typeof(System.Int32)))
+    {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
+      if (input is String 
+          && typeof(System.String).IsConvertibleTo(outputType))
+      {
+        System.String result = null;
+        try {
+          result = ((System.String)input).Substring(
+            (System.Int32)arg1,
+            (System.Int32)arg2
+          );
+        } catch {}
+        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
+        {
+          visitorWithCheck(string.Format("{0}.Substring({1}, {2})", callChain, 
+            arg1.ToLiteral(), arg2.ToLiteral()));
+        }
+      }
+    }
+    foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5875,6 +7797,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.Char)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is DateTime 
           && typeof(System.String[]).IsConvertibleTo(outputType))
       {
@@ -5895,6 +7822,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Byte 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5915,6 +7847,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Decimal 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5935,6 +7872,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Double 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5955,6 +7897,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int16 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5975,6 +7922,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int32 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -5995,6 +7947,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Int64 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6015,6 +7972,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is SByte 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6035,6 +7997,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is Single 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6055,6 +8022,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is TimeSpan 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6075,6 +8047,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt16 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6095,6 +8072,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt32 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6115,6 +8097,11 @@ namespace CallSharp
     foreach (var arg1 in fragEngine.Frag(input, typeof(System.String)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(System.IFormatProvider)))
     {
+      if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine("Cancellation requested");
+    return;
+  }
       if (input is UInt64 
           && typeof(System.String).IsConvertibleTo(outputType))
       {
@@ -6138,40 +8125,6 @@ namespace CallSharp
   if (!foundSomething && depth < 2)
   {
      // recursive invocation on String happening here!
-	if (input is String && typeof(System.Char[]) != outputType)
-    {
-      System.Char[] result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).ToCharArray();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToCharArray()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.Int32) != outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).GetHashCode();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.GetHashCode()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
 	if (input is String && typeof(System.Int32) != outputType)
     {
       System.Int32? result = new System.Int32?();
@@ -6183,212 +8136,8 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Length", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String[]) != outputType)
-    {
-      System.String[] result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).Split();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.Split()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).Trim();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.Trim()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).TrimStart();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.TrimStart()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).TrimEnd();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.TrimEnd()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.Boolean) != outputType)
-    {
-      System.Boolean? result = new System.Boolean?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).IsNormalized();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.IsNormalized()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).Normalize();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.Normalize()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).ToLower();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToLower()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).ToLowerInvariant();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToLowerInvariant()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).ToUpper();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToUpper()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).ToUpperInvariant();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToUpperInvariant()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).ToString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToString()", callChain));
-      }
-      
-    }
-     // recursive invocation on String happening here!
-	if (input is String && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.String)input).Trim();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.Trim()", callChain));
       }
       
     }
@@ -6404,7 +8153,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -6421,8 +8170,246 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetEnumerator()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).ToLower();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToLower()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).ToLowerInvariant();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToLowerInvariant()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).ToUpper();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToUpper()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).ToUpperInvariant();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToUpperInvariant()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).ToString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToString()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).Trim();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.Trim()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Char[]) != outputType)
+    {
+      System.Char[] result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).ToCharArray();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToCharArray()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).GetHashCode();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.GetHashCode()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String[]) != outputType)
+    {
+      System.String[] result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).Split();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.Split()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).Trim();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.Trim()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).TrimStart();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.TrimStart()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).TrimEnd();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.TrimEnd()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.Boolean) != outputType)
+    {
+      System.Boolean? result = new System.Boolean?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).IsNormalized();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.IsNormalized()", callChain));
+      }
+      
+    }
+     // recursive invocation on String happening here!
+	if (input is String && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.String)input).Normalize();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.Normalize()", callChain));
       }
       
     }
@@ -6438,7 +8425,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -6455,7 +8442,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Day", callChain));
       }
       
@@ -6472,7 +8459,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Hour", callChain));
       }
       
@@ -6489,7 +8476,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Month", callChain));
       }
       
@@ -6506,7 +8493,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Minute", callChain));
       }
       
@@ -6523,7 +8510,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Second", callChain));
       }
       
@@ -6540,144 +8527,8 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Year", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.Boolean) != outputType)
-    {
-      System.Boolean? result = new System.Boolean?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).IsDaylightSavingTime();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.IsDaylightSavingTime()", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.Int64) != outputType)
-    {
-      System.Int64? result = new System.Int64?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).ToBinary();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.ToBinary()", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.DateTime) != outputType)
-    {
-      System.DateTime? result = new System.DateTime?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Date;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.Date", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.DayOfWeek) != outputType)
-    {
-      System.DayOfWeek? result = new System.DayOfWeek?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).DayOfWeek;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.DayOfWeek", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.Int32) != outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).DayOfYear;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.DayOfYear", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.Int32) != outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).GetHashCode();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.GetHashCode()", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.DateTimeKind) != outputType)
-    {
-      System.DateTimeKind? result = new System.DateTimeKind?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Kind;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.Kind", callChain));
-      }
-      
-    }
-     // recursive invocation on DateTime happening here!
-	if (input is DateTime && typeof(System.Int32) != outputType)
-    {
-      System.Int32? result = new System.Int32?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.DateTime)input).Millisecond;
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.Millisecond", callChain));
       }
       
     }
@@ -6693,7 +8544,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Ticks", callChain));
       }
       
@@ -6710,7 +8561,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.TimeOfDay", callChain));
       }
       
@@ -6727,7 +8578,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.ToOADate()", callChain));
       }
       
@@ -6744,7 +8595,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.ToFileTime()", callChain));
       }
       
@@ -6761,7 +8612,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.ToFileTimeUtc()", callChain));
       }
       
@@ -6778,7 +8629,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.ToLocalTime()", callChain));
       }
       
@@ -6795,7 +8646,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToLongDateString()", callChain));
       }
       
@@ -6812,7 +8663,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToLongTimeString()", callChain));
       }
       
@@ -6829,7 +8680,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToShortDateString()", callChain));
       }
       
@@ -6846,7 +8697,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToShortTimeString()", callChain));
       }
       
@@ -6863,7 +8714,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -6880,7 +8731,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.ToUniversalTime()", callChain));
       }
       
@@ -6897,7 +8748,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetDateTimeFormats()", callChain));
       }
       
@@ -6914,8 +8765,144 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Boolean) != outputType)
+    {
+      System.Boolean? result = new System.Boolean?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).IsDaylightSavingTime();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.IsDaylightSavingTime()", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int64) != outputType)
+    {
+      System.Int64? result = new System.Int64?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).ToBinary();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.ToBinary()", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DateTime) != outputType)
+    {
+      System.DateTime? result = new System.DateTime?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Date;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.Date", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DayOfWeek) != outputType)
+    {
+      System.DayOfWeek? result = new System.DayOfWeek?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).DayOfWeek;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.DayOfWeek", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).DayOfYear;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.DayOfYear", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).GetHashCode();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.GetHashCode()", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.DateTimeKind) != outputType)
+    {
+      System.DateTimeKind? result = new System.DateTimeKind?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Kind;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.Kind", callChain));
+      }
+      
+    }
+     // recursive invocation on DateTime happening here!
+	if (input is DateTime && typeof(System.Int32) != outputType)
+    {
+      System.Int32? result = new System.Int32?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.DateTime)input).Millisecond;
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.Millisecond", callChain));
       }
       
     }
@@ -6931,7 +8918,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -6948,7 +8935,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -6965,7 +8952,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -6982,7 +8969,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -6999,7 +8986,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7016,7 +9003,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7033,7 +9020,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7050,7 +9037,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7067,7 +9054,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7084,7 +9071,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7101,7 +9088,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7118,7 +9105,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7135,8 +9122,25 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
+      }
+      
+    }
+     // recursive invocation on Decimal happening here!
+	if (input is Decimal && typeof(System.TypeCode) != outputType)
+    {
+      System.TypeCode? result = new System.TypeCode?();
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.Decimal)input).GetTypeCode();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
+      {
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
+          string.Format("{0}.GetTypeCode()", callChain));
       }
       
     }
@@ -7152,7 +9156,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7169,25 +9173,8 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
-      }
-      
-    }
-     // recursive invocation on Decimal happening here!
-	if (input is Decimal && typeof(System.TypeCode) != outputType)
-    {
-      System.TypeCode? result = new System.TypeCode?();
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.Decimal)input).GetTypeCode();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
-      {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
-          string.Format("{0}.GetTypeCode()", callChain));
       }
       
     }
@@ -7203,7 +9190,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7220,7 +9207,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7237,7 +9224,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7254,7 +9241,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7271,7 +9258,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7288,7 +9275,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7305,7 +9292,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7322,7 +9309,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7339,7 +9326,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7356,7 +9343,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7373,7 +9360,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7390,7 +9377,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7407,7 +9394,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7424,7 +9411,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7441,7 +9428,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7458,7 +9445,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7475,7 +9462,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7492,7 +9479,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7509,7 +9496,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7526,25 +9513,8 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
-      }
-      
-    }
-     // recursive invocation on SByte happening here!
-	if (input is SByte && typeof(System.String) != outputType)
-    {
-      System.String result = null;
-      try {
-        // invoke in the hope it yields something useful down the line
-                result = ((System.SByte)input).ToString();
-                            
-      } catch { /* cannot reasonably handle this */}
-
-            if (result != null && !Equals(result, input) && !Equals(result, origin))
-      {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-          string.Format("{0}.ToString()", callChain));
       }
       
     }
@@ -7560,8 +9530,25 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
+      }
+      
+    }
+     // recursive invocation on SByte happening here!
+	if (input is SByte && typeof(System.String) != outputType)
+    {
+      System.String result = null;
+      try {
+        // invoke in the hope it yields something useful down the line
+                result = ((System.SByte)input).ToString();
+                            
+      } catch { /* cannot reasonably handle this */}
+
+            if (result != null && !Equals(result, input) && !Equals(result, origin))
+      {
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+          string.Format("{0}.ToString()", callChain));
       }
       
     }
@@ -7577,7 +9564,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7594,7 +9581,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7611,7 +9598,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7628,7 +9615,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7645,7 +9632,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -7662,7 +9649,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7679,7 +9666,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Ticks", callChain));
       }
       
@@ -7696,7 +9683,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Days", callChain));
       }
       
@@ -7713,7 +9700,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Hours", callChain));
       }
       
@@ -7730,7 +9717,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Milliseconds", callChain));
       }
       
@@ -7747,7 +9734,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Minutes", callChain));
       }
       
@@ -7764,7 +9751,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Seconds", callChain));
       }
       
@@ -7781,7 +9768,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.TotalDays", callChain));
       }
       
@@ -7798,7 +9785,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.TotalHours", callChain));
       }
       
@@ -7815,7 +9802,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.TotalMilliseconds", callChain));
       }
       
@@ -7832,7 +9819,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.TotalMinutes", callChain));
       }
       
@@ -7849,7 +9836,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.TotalSeconds", callChain));
       }
       
@@ -7866,7 +9853,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Duration()", callChain));
       }
       
@@ -7883,7 +9870,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7900,7 +9887,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.Negate()", callChain));
       }
       
@@ -7917,7 +9904,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7934,7 +9921,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -7951,7 +9938,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -7968,7 +9955,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -7985,7 +9972,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -8002,7 +9989,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -8019,7 +10006,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -8036,7 +10023,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -8053,7 +10040,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -8070,7 +10057,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -8087,7 +10074,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -8104,7 +10091,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -8121,7 +10108,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetTypeCode()", callChain));
       }
       
@@ -8138,7 +10125,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -8155,7 +10142,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.ToString()", callChain));
       }
       
@@ -8172,7 +10159,7 @@ namespace CallSharp
 
             if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("{0}.GetHashCode()", callChain));
       }
       
@@ -8189,7 +10176,7 @@ namespace CallSharp
 
             if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("{0}.GetType()", callChain));
       }
       
@@ -8197,86 +10184,6 @@ namespace CallSharp
     
     // 6. Look for similar, but static calls. Here we go again.
          
-	 // static recursive check
-     if (inputType == typeof(System.String))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.String.IsNullOrEmpty((System.String)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("string.IsNullOrEmpty({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.String))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.String.IsNullOrWhiteSpace((System.String)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("string.IsNullOrWhiteSpace({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.String))
-     {
-       System.String result = null;
-       try
-       {
-         result = System.String.Copy((System.String)input);
-       } catch {}
-       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-           string.Format("string.Copy({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Object))
-     {
-       System.String result = null;
-       try
-       {
-         result = System.String.Concat((System.Object)input);
-       } catch {}
-       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-           string.Format("string.Concat({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Object[]))
-     {
-       System.String result = null;
-       try
-       {
-         result = System.String.Concat((System.Object[])input);
-       } catch {}
-       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-           string.Format("string.Concat({0})", callChain));
-       }
-     }
-
-          
 	 // static recursive check
      if (inputType == typeof(System.String[]))
      {
@@ -8287,7 +10194,7 @@ namespace CallSharp
        } catch {}
        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
            string.Format("string.Concat({0})", callChain));
        }
      }
@@ -8303,7 +10210,7 @@ namespace CallSharp
        } catch {}
        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
            string.Format("string.Intern({0})", callChain));
        }
      }
@@ -8319,72 +10226,88 @@ namespace CallSharp
        } catch {}
        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
            string.Format("string.IsInterned({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Int64))
+     if (inputType == typeof(System.String))
      {
-       System.DateTime? result = new System.DateTime?();
+       System.String result = null;
        try
        {
-         result = System.DateTime.FromBinary((System.Int64)input);
+         result = System.String.Copy((System.String)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("DateTime.FromBinary({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+           string.Format("string.Copy({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Int64))
+     if (inputType == typeof(System.Object))
      {
-       System.DateTime? result = new System.DateTime?();
+       System.String result = null;
        try
        {
-         result = System.DateTime.FromFileTime((System.Int64)input);
+         result = System.String.Concat((System.Object)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("DateTime.FromFileTime({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+           string.Format("string.Concat({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Int64))
+     if (inputType == typeof(System.Object[]))
      {
-       System.DateTime? result = new System.DateTime?();
+       System.String result = null;
        try
        {
-         result = System.DateTime.FromFileTimeUtc((System.Int64)input);
+         result = System.String.Concat((System.Object[])input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("DateTime.FromFileTimeUtc({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+           string.Format("string.Concat({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Double))
+     if (inputType == typeof(System.String))
      {
-       System.DateTime? result = new System.DateTime?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.DateTime.FromOADate((System.Double)input);
+         result = System.String.IsNullOrEmpty((System.String)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("DateTime.FromOADate({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("string.IsNullOrEmpty({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.String))
+     {
+       System.Boolean? result = new System.Boolean?();
+       try
+       {
+         result = System.String.IsNullOrWhiteSpace((System.String)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("string.IsNullOrWhiteSpace({0})", callChain));
        }
      }
 
@@ -8399,7 +10322,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("DateTime.IsLeapYear({0})", callChain));
        }
      }
@@ -8415,8 +10338,72 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("DateTime.Parse({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Int64))
+     {
+       System.DateTime? result = new System.DateTime?();
+       try
+       {
+         result = System.DateTime.FromBinary((System.Int64)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("DateTime.FromBinary({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Int64))
+     {
+       System.DateTime? result = new System.DateTime?();
+       try
+       {
+         result = System.DateTime.FromFileTime((System.Int64)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("DateTime.FromFileTime({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Int64))
+     {
+       System.DateTime? result = new System.DateTime?();
+       try
+       {
+         result = System.DateTime.FromFileTimeUtc((System.Int64)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("DateTime.FromFileTimeUtc({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Double))
+     {
+       System.DateTime? result = new System.DateTime?();
+       try
+       {
+         result = System.DateTime.FromOADate((System.Double)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.DateTime) && result.Value.Equals((System.DateTime)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("DateTime.FromOADate({0})", callChain));
        }
      }
 
@@ -8431,7 +10418,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("bool.Parse({0})", callChain));
        }
      }
@@ -8447,7 +10434,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Byte) && result.Value.Equals((System.Byte)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("byte.Parse({0})", callChain));
        }
      }
@@ -8463,216 +10450,8 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.ToLower({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.String result = null;
-       try
-       {
-         result = System.Char.ToString((System.Char)input);
-       } catch {}
-       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-           string.Format("char.ToString({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.String))
-     {
-       System.Char? result = new System.Char?();
-       try
-       {
-         result = System.Char.Parse((System.String)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.Parse({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsDigit((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsDigit({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsLetter((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsLetter({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsWhiteSpace((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsWhiteSpace({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsUpper((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsUpper({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsLower((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsLower({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsPunctuation((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsPunctuation({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsLetterOrDigit((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsLetterOrDigit({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Char? result = new System.Char?();
-       try
-       {
-         result = System.Char.ToUpper((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.ToUpper({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Char? result = new System.Char?();
-       try
-       {
-         result = System.Char.ToUpperInvariant((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.ToUpperInvariant({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Char? result = new System.Char?();
-       try
-       {
-         result = System.Char.ToLowerInvariant((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.ToLowerInvariant({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Char))
-     {
-       System.Boolean? result = new System.Boolean?();
-       try
-       {
-         result = System.Char.IsControl((System.Char)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("char.IsControl({0})", callChain));
        }
      }
 
@@ -8687,7 +10466,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.IsNumber({0})", callChain));
        }
      }
@@ -8703,7 +10482,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.IsSeparator({0})", callChain));
        }
      }
@@ -8719,7 +10498,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.IsSurrogate({0})", callChain));
        }
      }
@@ -8735,7 +10514,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.IsSymbol({0})", callChain));
        }
      }
@@ -8751,7 +10530,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Globalization.UnicodeCategory) && result.Value.Equals((System.Globalization.UnicodeCategory)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.GetUnicodeCategory({0})", callChain));
        }
      }
@@ -8767,7 +10546,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.GetNumericValue({0})", callChain));
        }
      }
@@ -8783,7 +10562,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.IsHighSurrogate({0})", callChain));
        }
      }
@@ -8799,7 +10578,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("char.IsLowSurrogate({0})", callChain));
        }
      }
@@ -8815,72 +10594,24 @@ namespace CallSharp
        } catch {}
        if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
            string.Format("char.ConvertFromUtf32({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Int64? result = new System.Int64?();
+       System.String result = null;
        try
        {
-         result = System.Decimal.ToOACurrency((System.Decimal)input);
+         result = System.Char.ToString((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
+       if (result != null && output.GetType() == typeof(System.String) && result.Equals((System.String)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToOACurrency({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Int64))
-     {
-       System.Decimal? result = new System.Decimal?();
-       try
-       {
-         result = System.Decimal.FromOACurrency((System.Int64)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.FromOACurrency({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Decimal))
-     {
-       System.Decimal? result = new System.Decimal?();
-       try
-       {
-         result = System.Decimal.Ceiling((System.Decimal)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.Ceiling({0})", callChain));
-       }
-     }
-
-          
-	 // static recursive check
-     if (inputType == typeof(System.Decimal))
-     {
-       System.Decimal? result = new System.Decimal?();
-       try
-       {
-         result = System.Decimal.Floor((System.Decimal)input);
-       } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
-       {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.Floor({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+           string.Format("char.ToString({0})", callChain));
        }
      }
 
@@ -8888,175 +10619,191 @@ namespace CallSharp
 	 // static recursive check
      if (inputType == typeof(System.String))
      {
-       System.Decimal? result = new System.Decimal?();
+       System.Char? result = new System.Char?();
        try
        {
-         result = System.Decimal.Parse((System.String)input);
+         result = System.Char.Parse((System.String)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.Parse({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.Parse({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Int32[] result = null;
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.GetBits((System.Decimal)input);
+         result = System.Char.IsDigit((System.Char)input);
        } catch {}
-       if (result != null && output.GetType() == typeof(System.Int32[]) && result.Equals((System.Int32[])output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result, output, depth+1,
-           string.Format("decimal.GetBits({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsDigit({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Decimal? result = new System.Decimal?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.Negate((System.Decimal)input);
+         result = System.Char.IsLetter((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.Negate({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsLetter({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Decimal? result = new System.Decimal?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.Round((System.Decimal)input);
+         result = System.Char.IsWhiteSpace((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.Round({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsWhiteSpace({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Byte? result = new System.Byte?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.ToByte((System.Decimal)input);
+         result = System.Char.IsUpper((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Byte) && result.Value.Equals((System.Byte)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToByte({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsUpper({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.SByte? result = new System.SByte?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.ToSByte((System.Decimal)input);
+         result = System.Char.IsLower((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToSByte({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsLower({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Int16? result = new System.Int16?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.ToInt16((System.Decimal)input);
+         result = System.Char.IsPunctuation((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToInt16({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsPunctuation({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Double? result = new System.Double?();
+       System.Boolean? result = new System.Boolean?();
        try
        {
-         result = System.Decimal.ToDouble((System.Decimal)input);
+         result = System.Char.IsLetterOrDigit((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToDouble({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsLetterOrDigit({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Int32? result = new System.Int32?();
+       System.Char? result = new System.Char?();
        try
        {
-         result = System.Decimal.ToInt32((System.Decimal)input);
+         result = System.Char.ToUpper((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToInt32({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.ToUpper({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.Int64? result = new System.Int64?();
+       System.Char? result = new System.Char?();
        try
        {
-         result = System.Decimal.ToInt64((System.Decimal)input);
+         result = System.Char.ToUpperInvariant((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToInt64({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.ToUpperInvariant({0})", callChain));
        }
      }
 
           
 	 // static recursive check
-     if (inputType == typeof(System.Decimal))
+     if (inputType == typeof(System.Char))
      {
-       System.UInt16? result = new System.UInt16?();
+       System.Char? result = new System.Char?();
        try
        {
-         result = System.Decimal.ToUInt16((System.Decimal)input);
+         result = System.Char.ToLowerInvariant((System.Char)input);
        } catch {}
-       if (result.HasValue && output.GetType() == typeof(System.UInt16) && result.Value.Equals((System.UInt16)output))
+       if (result.HasValue && output.GetType() == typeof(System.Char) && result.Value.Equals((System.Char)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
-           string.Format("decimal.ToUInt16({0})", callChain));
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.ToLowerInvariant({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Char))
+     {
+       System.Boolean? result = new System.Boolean?();
+       try
+       {
+         result = System.Char.IsControl((System.Char)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("char.IsControl({0})", callChain));
        }
      }
 
@@ -9071,7 +10818,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.UInt32) && result.Value.Equals((System.UInt32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("decimal.ToUInt32({0})", callChain));
        }
      }
@@ -9087,7 +10834,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.UInt64) && result.Value.Equals((System.UInt64)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("decimal.ToUInt64({0})", callChain));
        }
      }
@@ -9103,7 +10850,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Single) && result.Value.Equals((System.Single)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("decimal.ToSingle({0})", callChain));
        }
      }
@@ -9119,8 +10866,248 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("decimal.Truncate({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Int64? result = new System.Int64?();
+       try
+       {
+         result = System.Decimal.ToOACurrency((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToOACurrency({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Int64))
+     {
+       System.Decimal? result = new System.Decimal?();
+       try
+       {
+         result = System.Decimal.FromOACurrency((System.Int64)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.FromOACurrency({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Decimal? result = new System.Decimal?();
+       try
+       {
+         result = System.Decimal.Ceiling((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.Ceiling({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Decimal? result = new System.Decimal?();
+       try
+       {
+         result = System.Decimal.Floor((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.Floor({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.String))
+     {
+       System.Decimal? result = new System.Decimal?();
+       try
+       {
+         result = System.Decimal.Parse((System.String)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.Parse({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Int32[] result = null;
+       try
+       {
+         result = System.Decimal.GetBits((System.Decimal)input);
+       } catch {}
+       if (result != null && output.GetType() == typeof(System.Int32[]) && result.Equals((System.Int32[])output))
+       {
+         FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
+           string.Format("decimal.GetBits({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Decimal? result = new System.Decimal?();
+       try
+       {
+         result = System.Decimal.Negate((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.Negate({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Decimal? result = new System.Decimal?();
+       try
+       {
+         result = System.Decimal.Round((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.Round({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Byte? result = new System.Byte?();
+       try
+       {
+         result = System.Decimal.ToByte((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Byte) && result.Value.Equals((System.Byte)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToByte({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.SByte? result = new System.SByte?();
+       try
+       {
+         result = System.Decimal.ToSByte((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToSByte({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Int16? result = new System.Int16?();
+       try
+       {
+         result = System.Decimal.ToInt16((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToInt16({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Double? result = new System.Double?();
+       try
+       {
+         result = System.Decimal.ToDouble((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToDouble({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Int32? result = new System.Int32?();
+       try
+       {
+         result = System.Decimal.ToInt32((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToInt32({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.Int64? result = new System.Int64?();
+       try
+       {
+         result = System.Decimal.ToInt64((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToInt64({0})", callChain));
+       }
+     }
+
+          
+	 // static recursive check
+     if (inputType == typeof(System.Decimal))
+     {
+       System.UInt16? result = new System.UInt16?();
+       try
+       {
+         result = System.Decimal.ToUInt16((System.Decimal)input);
+       } catch {}
+       if (result.HasValue && output.GetType() == typeof(System.UInt16) && result.Value.Equals((System.UInt16)output))
+       {
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
+           string.Format("decimal.ToUInt16({0})", callChain));
        }
      }
 
@@ -9135,7 +11122,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("double.IsInfinity({0})", callChain));
        }
      }
@@ -9151,7 +11138,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("double.IsPositiveInfinity({0})", callChain));
        }
      }
@@ -9167,7 +11154,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("double.IsNegativeInfinity({0})", callChain));
        }
      }
@@ -9183,7 +11170,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("double.IsNaN({0})", callChain));
        }
      }
@@ -9199,7 +11186,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("double.Parse({0})", callChain));
        }
      }
@@ -9215,7 +11202,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("short.Parse({0})", callChain));
        }
      }
@@ -9231,7 +11218,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("int.Parse({0})", callChain));
        }
      }
@@ -9247,7 +11234,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("long.Parse({0})", callChain));
        }
      }
@@ -9263,7 +11250,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Round({0})", callChain));
        }
      }
@@ -9279,7 +11266,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Round({0})", callChain));
        }
      }
@@ -9295,7 +11282,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Floor({0})", callChain));
        }
      }
@@ -9311,7 +11298,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Floor({0})", callChain));
        }
      }
@@ -9327,7 +11314,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Ceiling({0})", callChain));
        }
      }
@@ -9343,7 +11330,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Ceiling({0})", callChain));
        }
      }
@@ -9359,7 +11346,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Acos({0})", callChain));
        }
      }
@@ -9375,7 +11362,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Asin({0})", callChain));
        }
      }
@@ -9391,7 +11378,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Atan({0})", callChain));
        }
      }
@@ -9407,7 +11394,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Cos({0})", callChain));
        }
      }
@@ -9423,7 +11410,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Cosh({0})", callChain));
        }
      }
@@ -9439,7 +11426,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sin({0})", callChain));
        }
      }
@@ -9455,7 +11442,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Tan({0})", callChain));
        }
      }
@@ -9471,7 +11458,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sinh({0})", callChain));
        }
      }
@@ -9487,7 +11474,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Tanh({0})", callChain));
        }
      }
@@ -9503,7 +11490,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Truncate({0})", callChain));
        }
      }
@@ -9519,7 +11506,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Truncate({0})", callChain));
        }
      }
@@ -9535,7 +11522,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sqrt({0})", callChain));
        }
      }
@@ -9551,7 +11538,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Log({0})", callChain));
        }
      }
@@ -9567,7 +11554,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Log10({0})", callChain));
        }
      }
@@ -9583,7 +11570,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Exp({0})", callChain));
        }
      }
@@ -9599,7 +11586,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9615,7 +11602,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int16) && result.Value.Equals((System.Int16)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9631,7 +11618,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9647,7 +11634,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int64) && result.Value.Equals((System.Int64)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9663,7 +11650,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Single) && result.Value.Equals((System.Single)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9679,7 +11666,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Double) && result.Value.Equals((System.Double)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9695,7 +11682,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Decimal) && result.Value.Equals((System.Decimal)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Abs({0})", callChain));
        }
      }
@@ -9711,7 +11698,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9727,7 +11714,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9743,7 +11730,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9759,7 +11746,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9775,7 +11762,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9791,7 +11778,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9807,7 +11794,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Int32) && result.Value.Equals((System.Int32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("Math.Sign({0})", callChain));
        }
      }
@@ -9823,7 +11810,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.SByte) && result.Value.Equals((System.SByte)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("sbyte.Parse({0})", callChain));
        }
      }
@@ -9839,7 +11826,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("float.IsInfinity({0})", callChain));
        }
      }
@@ -9855,7 +11842,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("float.IsPositiveInfinity({0})", callChain));
        }
      }
@@ -9871,7 +11858,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("float.IsNegativeInfinity({0})", callChain));
        }
      }
@@ -9887,7 +11874,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Boolean) && result.Value.Equals((System.Boolean)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("float.IsNaN({0})", callChain));
        }
      }
@@ -9903,7 +11890,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.Single) && result.Value.Equals((System.Single)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("float.Parse({0})", callChain));
        }
      }
@@ -9919,7 +11906,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.FromDays({0})", callChain));
        }
      }
@@ -9935,7 +11922,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.FromHours({0})", callChain));
        }
      }
@@ -9951,7 +11938,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.FromMilliseconds({0})", callChain));
        }
      }
@@ -9967,7 +11954,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.FromMinutes({0})", callChain));
        }
      }
@@ -9983,7 +11970,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.FromSeconds({0})", callChain));
        }
      }
@@ -9999,7 +11986,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.FromTicks({0})", callChain));
        }
      }
@@ -10015,7 +12002,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.TimeSpan) && result.Value.Equals((System.TimeSpan)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("TimeSpan.Parse({0})", callChain));
        }
      }
@@ -10031,7 +12018,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.UInt16) && result.Value.Equals((System.UInt16)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("ushort.Parse({0})", callChain));
        }
      }
@@ -10047,7 +12034,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.UInt32) && result.Value.Equals((System.UInt32)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("uint.Parse({0})", callChain));
        }
      }
@@ -10063,7 +12050,7 @@ namespace CallSharp
        } catch {}
        if (result.HasValue && output.GetType() == typeof(System.UInt64) && result.Value.Equals((System.UInt64)output))
        {
-         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1,
+         FindCandidates(visitorWithCheck, origin, result.Value, output, depth+1, token,
            string.Format("ulong.Parse({0})", callChain));
        }
      }

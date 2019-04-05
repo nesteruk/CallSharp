@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using NUnit.Framework;
 using CallSharp;
 
@@ -9,6 +10,7 @@ namespace Tests
   public class BasicMatchTests
   {
     private static readonly IMemberDatabase mdb = new StaticMemberDatabase();
+    private static CancellationToken token = new CancellationToken();
 
     [Test, Category(Categories.LongRunning)]
     [TestCase("foo   ", "foo", "input.TrimEnd()")]
@@ -17,7 +19,7 @@ namespace Tests
     public void StringCalls(string input, string output, string requiredCandidate)
     {
       var candidates = new List<string>();
-      mdb.FindCandidates(x => { candidates.Add(x); }, input, input, output, 2);
+      mdb.FindCandidates(x => { candidates.Add(x); }, input, input, output, 2, token);
       Assert.That(candidates, Contains.Item(requiredCandidate));
     }
 
@@ -27,7 +29,7 @@ namespace Tests
       string requiredCandidate)
     {
       var candidates = new List<string>();
-      mdb.FindCandidates(x => candidates.Add(x), input, input, output, 2);
+      mdb.FindCandidates(x => candidates.Add(x), input, input, output, 2, token);
       Assert.That(candidates, Contains.Item(requiredCandidate));
     }
 
@@ -35,7 +37,7 @@ namespace Tests
     public void FloatToIntImplicitTest()
     {
       var candidates = new List<string>();
-      mdb.FindCandidates(x => candidates.Add(x), 1.0f, 1.0f, 1, 2);
+      mdb.FindCandidates(x => candidates.Add(x), 1.0f, 1.0f, 1, 2, token);
       Assert.That(candidates, Contains.Item("input"));
     }
 

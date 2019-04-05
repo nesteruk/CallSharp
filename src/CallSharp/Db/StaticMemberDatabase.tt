@@ -185,6 +185,12 @@
     }
     
   }
+
+  string exitTokenCheck = @"if (token.IsCancellationRequested) 
+  { 
+    Trace.WriteLine(""Cancellation requested"");
+    return;
+  }";
 #>
 
 namespace CallSharp
@@ -192,6 +198,7 @@ namespace CallSharp
   using System;
   using System.Diagnostics;
   using System.Collections.Generic;
+  using System.Threading;
   using System.Threading.Tasks;
 
   public class StaticMemberDatabase : IMemberDatabase
@@ -202,8 +209,10 @@ namespace CallSharp
       Action<string> visitor,
       object origin,
       object input, object output, int depth,
+      CancellationToken token,
       string callChain = "input")
     {
+      <#= exitTokenCheck #>
       Trace.WriteLine(callChain);
 
       var inputType = input.GetType();
@@ -245,7 +254,8 @@ namespace CallSharp
       <#
   foreach (var ctor in allConstructors)
   {
-    #>if (output is <#= ctor.DeclaringType.FullName #> && input is <#= ctor.GetParameters()[0].ParameterType.FullName #>)
+    #><#= exitTokenCheck #>
+    if (output is <#= ctor.DeclaringType.FullName #> && input is <#= ctor.GetParameters()[0].ParameterType.FullName #>)
     {
       var instance = new <#= ctor.DeclaringType.FullName #>((<#= ctor.GetParameters()[0].ParameterType.FullName #>)input);
       if (instance == (<#= ctor.DeclaringType.FullName #>)output && !Equals(instance,origin))
@@ -268,6 +278,7 @@ namespace CallSharp
     )))
   { // TODO: group by in/out pairs
     #>
+    <#= exitTokenCheck #>
     Task.Factory.StartNew(() => {
     if (input is <#= method.DeclaringType.Name #> && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
     {
@@ -315,6 +326,7 @@ namespace CallSharp
     // ensure input type is convertible to first parameter
     // todo: ensure we are avoiding ref/out
     #>
+    <#= exitTokenCheck #>
     Task.Factory.StartNew(() => {
     if (inputType.IsConvertibleTo(typeof(<#= parameters[0].ParameterType.FullName #>)) &&
         typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
@@ -354,6 +366,7 @@ namespace CallSharp
     // todo: get fragmentations first for each type
     #>Parallel.ForEach (fragEngine.Frag(input, typeof(<#= method.GetParameters()[0].ParameterType.FullName #>)), arg => {
     {
+      <#= exitTokenCheck #>
       if (input is <#= method.DeclaringType.Name #> 
           && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
       {
@@ -398,6 +411,7 @@ namespace CallSharp
     #>foreach (var arg1 in fragEngine.Frag(input, typeof(<#= method.GetParameters()[0].ParameterType.FullName #>)))
     foreach (var arg2 in fragEngine.Frag(input, typeof(<#= method.GetParameters()[1].ParameterType.FullName #>)))
     {
+      <#= exitTokenCheck #>
       if (input is <#= method.DeclaringType.Name #> 
           && typeof(<#= method.ReturnType.FullName #>).IsConvertibleTo(outputType))
       {
@@ -465,13 +479,13 @@ namespace CallSharp
       <# if (method.ReturnType.IsValueType) { #>
       if (result.HasValue && !Equals(result.Value, input) && !Equals(result.Value, origin))
       {
-        FindCandidates(visitor, origin, result.Value, output, depth+1,
+        FindCandidates(visitor, origin, result.Value, output, depth+1, token,
           string.Format("<#= cookie.ToString() #>", callChain));
       }
       <# } else { #>
       if (result != null && !Equals(result, input) && !Equals(result, origin))
       {
-        FindCandidates(visitorWithCheck, origin, result, output, depth+1,
+        FindCandidates(visitorWithCheck, origin, result, output, depth+1, token,
           string.Format("<#= cookie.ToString() #>", callChain));
       }
       <# } #>
@@ -509,7 +523,7 @@ namespace CallSharp
        if (<#= resultCheck(method.ReturnType) #>)
        {
          <# MethodCallCookie cookie = new MethodCallCookie(method, new object[]{}); 
-         #>FindCandidates(visitorWithCheck, origin, result<#= valueIfNeeded(method.ReturnType) #>, output, depth+1,
+         #>FindCandidates(visitorWithCheck, origin, result<#= valueIfNeeded(method.ReturnType) #>, output, depth+1, token,
            string.Format("<#= cookie.ToString() #>", callChain));
        }
      }
@@ -639,8 +653,7 @@ namespace CallSharp
           
           // caveat: calling a params[] really passes in a single
           // 0-sized array :( need special handling
-          var arr = arg as Array;
-          if (arr != null && arr.Length == 0)
+          if (arg is Array arr && arr.Length == 0)
             break;
 
           // todo: literalize argument into code
@@ -658,10 +671,10 @@ namespace CallSharp
           {
             sb.AppendFormat("\'{0}'", arg);
           }
-          else if (arg is char[])
+          else if (arg is char[] charArray)
           {
             if (!ip) sb.Append("new char[]{");
-            sb.Append(string.Join(",", ((char[]) arg).Select(c => "'" + c + "'")));
+            sb.Append(string.Join(",", charArray.Select(c => "'" + c + "'")));
             if (!ip) sb.Append("}");
           }
           else

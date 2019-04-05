@@ -29,19 +29,24 @@
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
+
+    <!-- Row 0/1 : Input -->
     <Label HorizontalAlignment="Right">Input:</Label>
     <me:MagicTextBox Grid.Row="0" Grid.Column="1" FontFamily="{StaticResource theFont}" Margin="3"
              Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
 
+    
     <TextBlock Grid.Row="1" Grid.Column="1" 
                FontSize="{StaticResource smallFontSize}"
                Margin="2" TextWrapping="Wrap">
       <Span>
-        <Run>Input treated as </Run>
-        <Run FontWeight="Bold">a scalar value</Run>
+        <Run>Input treated as a</Run>
+        <Hyperlink>scalar value</Hyperlink>
+        <Hyperlink>sequence</Hyperlink>
       </Span>
       <LineBreak/>
       <Span>
@@ -51,10 +56,13 @@
       </Span>
     </TextBlock>
 
+    <!-- Row 2/3 : Output -->
+
     <Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right">Expected output:</Label>
     <me:MagicTextBox Grid.Column="1" Grid.Row="2" 
              FontFamily="{StaticResource theFont}" Margin="3"
              Text="{Binding Path=OutputText, UpdateSourceTrigger=PropertyChanged}"/>
+
 
     <TextBlock Grid.Row="3" Grid.Column="1" 
                FontSize="{StaticResource smallFontSize}"
@@ -64,7 +72,15 @@
       <Span x:Name="AlternateOutputValues"/>
     </TextBlock>
 
-    <StackPanel Orientation="Vertical" Grid.Row="4" Grid.Column="0">
+    <!-- Row 4 : Separator -->
+    <Label Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right">Separator:</Label>
+    <TextBox Grid.Column="1" Grid.Row="4"
+             FontFamily="{StaticResource theFont}" Margin="3"
+             Text="{Binding Path=Separator, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+
+    <!-- Row 5 : Everything else -->
+
+    <StackPanel Orientation="Vertical" Grid.Row="5" Grid.Column="0">
       <Button Height="50" Margin="3" VerticalAlignment="Top"
               x:Name="BtnSearch" Click="BtnSearch_OnClick"
               HorizontalContentAlignment="Center">
@@ -84,12 +100,22 @@
         </TextBlock>
       </Button>
     </StackPanel>
-    <ListBox Grid.Row="4" Grid.Column="1" Margin="3" 
-             FontFamily="{StaticResource theFont}"
-             ItemsSource="{Binding Candidates}"
-             x:Name="LbCandidates"/>
 
-    <StatusBar Grid.Row="5" Grid.ColumnSpan="2" Visibility="Collapsed">
+    <TabControl Grid.Row="5" Grid.Column="1" Margin="3" >
+      <TabItem Header="Results">
+        <ListBox 
+          FontFamily="{StaticResource theFont}"
+          ItemsSource="{Binding Candidates}"
+          x:Name="LbCandidates"/>
+      </TabItem>
+      <TabItem Header="Log">
+        <ListBox FontFamily="{StaticResource theFont}"
+        ItemsSource="{Binding Log}"
+        x:Name="LbLog"/>
+      </TabItem>
+    </TabControl>
+
+    <StatusBar Grid.Row="6" Grid.ColumnSpan="2" Visibility="Collapsed">
       <StatusBarItem>
         <TextBlock Name="TbInfo" FontSize="{StaticResource smallFontSize}" />
       </StatusBarItem>

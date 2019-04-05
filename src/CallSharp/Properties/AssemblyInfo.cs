@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ActiveMesa")]
 [assembly: AssemblyProduct("CallSharp")]
-[assembly: AssemblyCopyright("Copyright © ActiveMesa, 2016-2017")]
+[assembly: AssemblyCopyright("Copyright © ActiveMesa, 2016-2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -49,8 +49,8 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.2.1.0")]
-[assembly: AssemblyFileVersion("0.2.1.0")]
+[assembly: AssemblyVersion("0.2.2.0")]
+[assembly: AssemblyFileVersion("0.2.2.0")]
 
 // 0.2.1 changes:
 // - Removed identity calls (e.g., input.ToUpper().ToLower())
